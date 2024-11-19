@@ -7,12 +7,14 @@ function MatchHistory() {
   ];
 
   return (
-    <div>
-      <h2>Storico Partite</h2>
-      <ul>
+    <div className="card">
+      <div className="card-header">
+        <h2>Storico Partite</h2>
+      </div>
+      <ul className="list-group list-group-flush">
         {matches.map((match) => (
-          <li key={match.id}>
-            {match.date}: {match.teamA} vs {match.teamB}
+          <li key={match.id} className="list-group-item">
+            <strong>{match.date}</strong>: {match.teamA} vs {match.teamB}
           </li>
         ))}
       </ul>

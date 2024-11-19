@@ -7,11 +7,13 @@ function PlayerList() {
   ]);
 
   return (
-    <div>
-      <h2>Lista Giocatori</h2>
-      <ul>
+    <div className="card">
+      <div className="card-header">
+        <h2>Lista Giocatori</h2>
+      </div>
+      <ul className="list-group list-group-flush">
         {players.map((player) => (
-          <li key={player.id}>
+          <li key={player.id} className="list-group-item">
             {player.name} - {player.goals} gol
           </li>
         ))}

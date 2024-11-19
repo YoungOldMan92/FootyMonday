@@ -5,17 +5,28 @@ import GoalLeaderboard from './components/GoalLeaderboard';
 
 function App() {
   return (
-    <div className="App">
-      <header>
-        <h1>FootyMonday</h1>
+    <div className="container">
+      <header className="mb-4">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+          <a className="navbar-brand" href="#">FootyMonday</a>
+        </nav>
       </header>
       <main>
-        <PlayerList />
-        <GoalLeaderboard />
-        <MatchHistory />
+        <div className="row">
+          <div className="col-md-6">
+            <PlayerList />
+          </div>
+          <div className="col-md-6">
+            <GoalLeaderboard />
+          </div>
+        </div>
+        <div className="mt-4">
+          <MatchHistory />
+        </div>
       </main>
     </div>
   );
 }
 
 export default App;
+
