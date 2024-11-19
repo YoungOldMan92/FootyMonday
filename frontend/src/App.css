@@ -38,15 +38,43 @@
 }
 
 /* Tabelle senza bordi visibili */
-.table-no-border th,
-.table-no-border td {
-  border: none !important; /* Rimuove i bordi */
+.table-no-border {
+  border-collapse: collapse; /* Assicura un layout senza spazi tra celle */
 }
 
-/* Migliora l'allineamento degli elementi nella lista */
-.list-group-item {
-  display: flex;               /* Usa un layout flessibile */
-  justify-content: space-between; /* Spazia gli elementi */
-  align-items: center;         /* Centra verticalmente */
+.table-no-border th,
+.table-no-border td {
+  border: none !important; /* Rimuove i bordi di default */
 }
+
+/* Stile per la lista simulata */
+.leaderboard {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr 2fr; /* 4 colonne di larghezza */
+  gap: 0.5rem; /* Spaziatura tra righe */
+}
+
+.leaderboard-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr 2fr; /* Stessa struttura delle righe */
+  font-weight: bold;
+  text-align: left;
+  margin-bottom: 0.5rem;
+  color: #555;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef; /* Linea separatrice per l'intestazione */
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr 2fr; /* Stessa struttura delle colonne */
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e9ecef; /* Leggera linea separatrice */
+}
+
+.leaderboard-row:last-child {
+  border-bottom: none; /* Rimuove la linea per l'ultimo elemento */
+}
+
+
 

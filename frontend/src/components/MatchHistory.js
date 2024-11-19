@@ -11,13 +11,15 @@ function MatchHistory() {
       <div className="card-header">
         <h2>Storico Partite</h2>
       </div>
-      <ul className="list-group list-group-flush">
-        {matches.map((match) => (
-          <li key={match.id} className="list-group-item">
-            <strong>{match.date}</strong>: {match.teamA} vs {match.teamB}
-          </li>
-        ))}
-      </ul>
+      <div className="card-body">
+        <div className="leaderboard">
+          {matches.map((match) => (
+            <div key={match.id} className="leaderboard-row">
+              <div>{match.date} {match.teamA} {match.teamB}</div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

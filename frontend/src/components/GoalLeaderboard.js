@@ -2,8 +2,8 @@ import React from 'react';
 
 function GoalLeaderboard() {
   const leaderboard = [
-    { id: 1, name: 'Mario Rossi', role: 'Attaccante', value: 85 },
-    { id: 2, name: 'Luigi Bianchi', role: 'Difensore', value: 78 },
+    { id: 1, name: 'Mario Rossi', role: 'Attaccante', value: 85, gol: 10 },
+    { id: 2, name: 'Luigi Bianchi', role: 'Difensore', value: 78, gol: 5 },
   ];
 
   return (
@@ -11,26 +11,18 @@ function GoalLeaderboard() {
       <div className="card-header">
         <h2>Classifica Giocatori</h2>
       </div>
-      <table className="table table-no-border">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Nome</th>
-            <th>Ruolo</th>
-            <th>Valore Totale</th>
-          </tr>
-        </thead>
-        <tbody>
-          {leaderboard.map((player, index) => (
-            <tr key={player.id}>
-              <td>{index + 1}</td>
-              <td>{player.name}</td>
-              <td>{player.role}</td>
-              <td>{player.value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="card-body">
+        <div className="leaderboard">
+            {leaderboard.map((player, index) => (
+                <div key={player.id} className="leaderboard-row">
+                <div></div>
+                <div>{index + 1}: {player.name} - {player.gol} gol</div>
+                <div></div>
+                <div></div>
+                </div>
+            ))}
+        </div>
+      </div>
     </div>
   );
 }
