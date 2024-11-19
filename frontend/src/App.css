@@ -37,6 +37,21 @@
   }
 }
 
+/* Colore dei titoli */
+h2 {
+  color: #0056b3; /* Blu scuro */
+}
+
+/* Migliora lo stile dei pulsanti */
+.btn-primary {
+  background-color: #007bff; /* Blu Bootstrap */
+  border-color: #0056b3;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
 /* Tabelle senza bordi visibili */
 .table-no-border {
   border-collapse: collapse; /* Assicura un layout senza spazi tra celle */
@@ -65,16 +80,104 @@
   border-bottom: 1px solid #e9ecef; /* Linea separatrice per l'intestazione */
 }
 
+/* Migliora la lista simulata */
 .leaderboard-row {
-  display: grid;
-  grid-template-columns: 1fr 2fr 2fr 2fr; /* Stessa struttura delle colonne */
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #e9ecef; /* Leggera linea separatrice */
+  padding: 10px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.leaderboard-row:hover {
+  background-color: #f1f3f5; /* Grigio chiaro quando si passa il mouse */
 }
 
 .leaderboard-row:last-child {
   border-bottom: none; /* Rimuove la linea per l'ultimo elemento */
 }
 
+/* Migliora lo stile delle card */
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
 
+/* Aggiunge colori ai titoli delle card */
+.card-header {
+  background-color: #f8f9fa; /* Grigio chiaro */
+  color: #333; /* Testo scuro */
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+}
 
+/* Migliora il layout della griglia */
+.container {
+  margin-top: 20px;
+}
+
+/* Stile personalizzato per badge con sfondo verde */
+.bg-success {
+  font-size: 1.5rem; /* Aumenta la dimensione del testo */
+  font-weight: bold; /* Rende il testo più marcato */
+  padding: 0.3rem 0.6rem; /* Migliora la spaziatura interna */
+  border-radius: 0.25rem; /* Arrotonda i bordi */
+}
+
+/* Assicura la visibilità del modale */
+.d-block {
+  display: block !important;
+}
+
+.d-none {
+  display: none !important;
+}
+
+/* Animazioni per fade-in e fade-out */
+.fade-in {
+  animation: fadeIn 0.3s forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.3s forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+/* Righe dei giocatori */
+.player-row {
+  display: flex; /* Layout flessibile */
+  align-items: center; /* Centra verticalmente il contenuto */
+  width: 100%; /* Larghezza della riga */
+  padding: 10px 0; /* Spaziatura interna */
+  border-bottom: 1px solid #e9ecef; /* Linea separatrice */
+}
+
+.player-row:last-child {
+  border-bottom: none; /* Nessuna linea per l'ultima riga */
+}
+
+/* Nome del giocatore */
+.player-row span {
+  cursor: pointer; /* Cambia il cursore sopra il testo */
+  font-weight: 500; /* Testo leggermente più marcato */
+}

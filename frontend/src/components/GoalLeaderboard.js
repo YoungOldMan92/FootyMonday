@@ -12,16 +12,13 @@ function GoalLeaderboard() {
         <h2>Classifica Giocatori</h2>
       </div>
       <div className="card-body">
-        <div className="leaderboard">
-            {leaderboard.map((player, index) => (
-                <div key={player.id} className="leaderboard-row">
-                <div></div>
-                <div>{index + 1}: {player.name} - {player.gol} gol</div>
-                <div></div>
-                <div></div>
-                </div>
-            ))}
-        </div>
+        {leaderboard.map((player, index) => (
+          <div key={player.id} className="leaderboard-row d-flex justify-content-between align-items-center">
+            <span>
+              <strong className="text-primary">#{index + 1}</strong> {player.name} ({player.role}) - <span className="badge bg-success">{player.gol}</span>
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
