@@ -3,10 +3,9 @@ import PlayerDetailsModal from './PlayerDetailsModal';
 import AddPlayerModal from './AddPlayerModal';
 
 function PlayerList() {
-  // Stato dei giocatori
   const [players, setPlayers] = useState([
-    { id: 1, name: 'Mario Rossi', attack: 8, defense: 7, technique: 9, stamina: 6, speed: 7, selected: false },
-    { id: 2, name: 'Luigi Bianchi', attack: 6, defense: 8, technique: 7, stamina: 8, speed: 7, selected: false },
+    { id: 1, nome: 'Mario Rossi', attack: 8, defense: 7, technique: 9, stamina: 6, speed: 7, selected: false, valoreTotale: 37 },
+    { id: 2, nome: 'Luigi Bianchi', attack: 6, defense: 8, technique: 7, stamina: 8, speed: 7, selected: false, valoreTotale: 36 },
   ]);
   const [selectedPlayer, setSelectedPlayer] = useState(null); // Giocatore selezionato per il modale
   const [isMouseOver, setIsMouseOver] = useState(false); // Stato del mouse sul nome/modale
@@ -25,9 +24,14 @@ function PlayerList() {
     setSelectedPlayer(null);
   };
 
+  // Funzione per eliminare un giocatore
+  const deletePlayer = (id) => {
+    setPlayers((prevPlayers) => prevPlayers.filter((player) => player.id !== id));
+  };
+
   // Filtra e ordina i giocatori
   const filteredPlayers = players.filter((player) =>
-    player.name.toLowerCase().includes(searchQuery.toLowerCase())
+    player.name && player.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const sortedPlayers = [...filteredPlayers].sort((a, b) => {
@@ -74,8 +78,22 @@ function PlayerList() {
 
   // Funzione per aggiungere un nuovo giocatore
   const addPlayer = (newPlayer) => {
-    setPlayers([...players, { ...newPlayer, id: players.length + 1, selected: false }]);
+    const macroCategories = {
+      tecnica: [newPlayer.controlloPalla, newPlayer.dribbling, newPlayer.precisionePassaggi, newPlayer.tiro],
+      resistenza: [newPlayer.stamina, newPlayer.velocita, newPlayer.resistenzaSforzo],
+      tattica: [newPlayer.anticipazione, newPlayer.copertura, newPlayer.adattabilitaTattica],
+      difesa: [newPlayer.contrasto, newPlayer.intercettazioni, newPlayer.coperturaSpazi],
+      attacco: [newPlayer.creativita, newPlayer.movimentoSenzaPalla, newPlayer.finalizzazione],
+      mentalita: [newPlayer.leadership, newPlayer.gestioneStress, newPlayer.sportivita],
+    };
+  
+    const valoreTotale = Object.values(macroCategories)
+      .map((cat) => cat.reduce((sum, val) => sum + val, 0) / cat.length)
+      .reduce((sum, val) => sum + val, 0);
+  
+    setPlayers((prev) => [...prev, { ...newPlayer, id: prev.length + 1, valoreTotale }]);
   };
+  
 
   return (
     <div className="card">
@@ -120,23 +138,51 @@ function PlayerList() {
       <div className="card-body">
         {/* Mostra i giocatori ordinati e filtrati */}
         {sortedPlayers.map((player) => (
-          <div key={player.id} className="player-row">
-            <input
-              type="checkbox"
-              checked={player.selected || false}
-              onChange={() => togglePlayerSelection(player.id)}
-              style={{ marginRight: '10px' }}
-            />
-            <span
-              style={{
-                cursor: 'pointer',
-                display: 'inline-block',
-              }}
-              onMouseEnter={() => handleMouseEnter(player)}
-              onMouseLeave={handleMouseLeave}
-            >
-              {player.name}
-            </span>
+          <div
+            key={player.id}
+            className="player-row"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div>
+              <input
+                type="checkbox"
+                checked={player.selected || false}
+                onChange={() => togglePlayerSelection(player.id)}
+                style={{ marginRight: '10px' }}
+              />
+              <span
+                style={{
+                  cursor: 'pointer',
+                  display: 'inline-block',
+                }}
+                onMouseEnter={() => handleMouseEnter(player)}
+                onMouseLeave={handleMouseLeave}
+              >
+                {player.name} - Valore Totale: {player.valoreTotale || 0}
+              </span>
+            </div>
+            {/* Pulsante per eliminare il giocatore */}
+            {player.selected && (
+              <button
+                onClick={() => deletePlayer(player.id)}
+                style={{
+                  border: 'none',
+                  background: 'none',
+                  color: 'red',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                }}
+              >
+                <i className="bi bi-dash-circle"></i> Rimuovi
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -154,10 +200,7 @@ function PlayerList() {
       <AddPlayerModal
         show={showAddPlayerModal}
         onClose={() => setShowAddPlayerModal(false)}
-        onSubmit={(newPlayer) => {
-          addPlayer(newPlayer);
-          setShowAddPlayerModal(false);
-        }}
+        onSubmit={addPlayer}
       />
     </div>
   );
