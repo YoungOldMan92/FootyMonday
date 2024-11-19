@@ -36,3 +36,17 @@
     transform: rotate(360deg);
   }
 }
+
+/* Tabelle senza bordi visibili */
+.table-no-border th,
+.table-no-border td {
+  border: none !important; /* Rimuove i bordi */
+}
+
+/* Migliora l'allineamento degli elementi nella lista */
+.list-group-item {
+  display: flex;               /* Usa un layout flessibile */
+  justify-content: space-between; /* Spazia gli elementi */
+  align-items: center;         /* Centra verticalmente */
+}
+
