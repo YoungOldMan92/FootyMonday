@@ -4,9 +4,11 @@ import PlayerList from './components/PlayerList';
 import MatchHistory from './components/MatchHistory';
 import GoalLeaderboard from './components/GoalLeaderboard';
 import TeamDisplay from './components/TeamDisplay';
+import PlayerRadarChart from './components/PlayerRadarChart'; // Importa il componente
 
 function App() {
   const [teams, setTeams] = useState({ teamA: null, teamB: null });
+  const [hoveredPlayer, setHoveredPlayer] = useState(null); // Stato per il giocatore selezionato
 
   const handleTeamsUpdate = (newTeams) => {
     setTeams(newTeams);
@@ -22,10 +24,15 @@ function App() {
       <main>
         <div className="row">
           <div className="col-md-6">
-            <PlayerList onTeamsUpdate={handleTeamsUpdate} />
+            <PlayerList
+              onTeamsUpdate={handleTeamsUpdate}
+              setHoveredPlayer={setHoveredPlayer} // Passa la funzione per aggiornare il giocatore
+            />
           </div>
           <div className="col-md-6">
             <GoalLeaderboard />
+            <br></br>
+            <PlayerRadarChart player={hoveredPlayer} /> {/* Aggiungi il grafico sotto */}
           </div>
         </div>
         <div className="mt-4">

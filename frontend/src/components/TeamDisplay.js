@@ -17,7 +17,6 @@ function TeamDisplay({ teamA, teamB }) {
             <li key={player.id} className="player-item">
               <strong>{player.name}</strong> <br />
               Valore: {player.valoreTotale} <br />
-              Gol: {player.gol || 0}
             </li>
           ))}
         </ul>
@@ -32,7 +31,6 @@ function TeamDisplay({ teamA, teamB }) {
             <li key={player.id} className="player-item">
               <strong>{player.name}</strong> <br />
               Valore: {player.valoreTotale} <br />
-              Gol: {player.gol || 0}
             </li>
           ))}
         </ul>
