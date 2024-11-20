@@ -1,25 +1,35 @@
 import React from 'react';
 
-function MatchHistory() {
-  const matches = [
-    { id: 1, date: '2023-11-01', teamA: 'Squadra A', teamB: 'Squadra B' },
-    { id: 2, date: '2023-11-08', teamA: 'Squadra C', teamB: 'Squadra D' },
-  ];
+function MatchHistory({ history }) {
+  if (!history || history.length === 0) {
+    return <p className="text-center">Non ci sono partite da mostrare.</p>;
+  }
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h2>Storico Partite</h2>
-      </div>
-      <div className="card-body">
-        <div className="leaderboard">
-          {matches.map((match) => (
-            <div key={match.id} className="leaderboard-row">
-              <div>{match.date} {match.teamA} {match.teamB}</div>
-            </div>
+    <div className="match-history">
+      <h3 className="history-title">Storico delle Partite</h3>
+      <table className="history-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Squadra A</th>
+            <th>Valore Totale A</th>
+            <th>Squadra B</th>
+            <th>Valore Totale B</th>
+          </tr>
+        </thead>
+        <tbody>
+          {history.map((match, index) => (
+            <tr key={index}>
+              <td>{index + 1}</td>
+              <td>{match.teamA.map((player) => player.name).join(', ')}</td>
+              <td>{match.teamA.reduce((sum, player) => sum + player.valoreTotale, 0)}</td>
+              <td>{match.teamB.map((player) => player.name).join(', ')}</td>
+              <td>{match.teamB.reduce((sum, player) => sum + player.valoreTotale, 0)}</td>
+            </tr>
           ))}
-        </div>
-      </div>
+        </tbody>
+      </table>
     </div>
   );
 }

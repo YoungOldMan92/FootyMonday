@@ -1,32 +1,143 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import config from '../config';
 import PlayerDetailsModal from './PlayerDetailsModal';
 import AddPlayerModal from './AddPlayerModal';
 
-function PlayerList() {
-  const [players, setPlayers] = useState([
-    { id: 1, nome: 'Mario Rossi', attack: 8, defense: 7, technique: 9, stamina: 6, speed: 7, selected: false, valoreTotale: 37 },
-    { id: 2, nome: 'Luigi Bianchi', attack: 6, defense: 8, technique: 7, stamina: 8, speed: 7, selected: false, valoreTotale: 36 },
-  ]);
-  const [selectedPlayer, setSelectedPlayer] = useState(null); // Giocatore selezionato per il modale
-  const [isMouseOver, setIsMouseOver] = useState(false); // Stato del mouse sul nome/modale
-  const [searchQuery, setSearchQuery] = useState(''); // Filtro di ricerca
-  const [sortCriteria, setSortCriteria] = useState(null); // Criterio di ordinamento
-  const [showAddPlayerModal, setShowAddPlayerModal] = useState(false); // Stato del modale per aggiungere giocatori
+function PlayerList({ onTeamsUpdate }) {
+  const [players, setPlayers] = useState([]);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [isMouseOver, setIsMouseOver] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortCriteria, setSortCriteria] = useState(null);
+  const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
+  const [matchHistory, setMatchHistory] = useState([]);
 
-  // Funzione per gestire il mouse sul nome
-  const handleMouseEnter = (player) => {
-    setSelectedPlayer(player);
-    setIsMouseOver(true);
+  // Carica i giocatori dal backend
+  useEffect(() => {
+    axios
+      .get(`${config.apiBaseUrl}/players`)
+      .then((response) => setPlayers(response.data))
+      .catch((err) => console.error("Errore durante il caricamento dei giocatori:", err));
+  }, []);
+
+  // Funzione per creare le squadre
+  const createTeams = () => {
+    const selectedPlayers = players.filter((player) => player.selected);
+    if (selectedPlayers.length < 2) {
+      alert('Devi selezionare almeno 2 giocatori per creare le squadre!');
+      return;
+    }
+
+    const teamSize = Math.floor(selectedPlayers.length / 2);
+    const shuffled = [...selectedPlayers].sort(() => 0.5 - Math.random());
+    const teamA = shuffled.slice(0, teamSize);
+    const teamB = shuffled.slice(teamSize);
+
+    onTeamsUpdate({ teamA, teamB });
+
+    setMatchHistory((prev) => [
+      { teams: { teamA: teamA.map((p) => p.name), teamB: teamB.map((p) => p.name) } },
+      ...prev.slice(0, 4), // Mantiene solo le ultime 5 partite
+    ]);
   };
 
-  const handleMouseLeave = () => {
-    setIsMouseOver(false);
-    setSelectedPlayer(null);
+  // Calcola il valore totale
+  const calculateValoreTotale = (player) => {
+    const macroCategories = {
+      capacitaTecnica: [
+        player.controlloPalla,
+        player.dribbling,
+        player.precisionePassaggi,
+        player.tiro,
+      ],
+      resistenzaFisica: [
+        player.stamina,
+        player.velocita,
+        player.resistenzaSforzo,
+      ],
+      posizionamentoTattico: [
+        player.anticipazione,
+        player.copertura,
+        player.adattabilitaTattica,
+      ],
+      capacitaDifensiva: [
+        player.contrasto,
+        player.intercettazioni,
+        player.coperturaSpazi,
+      ],
+      contributoInAttacco: [
+        player.creativita,
+        player.movimentoSenzaPalla,
+        player.finalizzazione,
+      ],
+      mentalitaEComportamento: [
+        player.leadership,
+        player.gestioneStress,
+        player.sportivita,
+      ],
+    };
+
+    const valoreTotale = Object.values(macroCategories)
+      .map((cat) => cat.reduce((sum, val) => sum + (Number(val) || 0), 0) / cat.length)
+      .reduce((sum, val) => sum + val, 0);
+
+    return Math.round(valoreTotale); // Arrotonda il valore totale
+  };
+
+  // Funzione per aggiungere giocatori
+  const addPlayer = (newPlayer) => {
+    const playerData = {
+      name: newPlayer.name,
+      capacitaTecnica: {
+        controlloPalla: newPlayer.controlloPalla,
+        dribbling: newPlayer.dribbling,
+        precisionePassaggi: newPlayer.precisionePassaggi,
+        tiro: newPlayer.tiro,
+      },
+      resistenzaFisica: {
+        stamina: newPlayer.stamina,
+        velocita: newPlayer.velocita,
+        resistenzaSforzo: newPlayer.resistenzaSforzo,
+      },
+      posizionamentoTattico: {
+        anticipazione: newPlayer.anticipazione,
+        copertura: newPlayer.copertura,
+        adattabilitaTattica: newPlayer.adattabilitaTattica,
+      },
+      capacitaDifensiva: {
+        contrasto: newPlayer.contrasto,
+        intercettazioni: newPlayer.intercettazioni,
+        coperturaSpazi: newPlayer.coperturaSpazi,
+      },
+      contributoInAttacco: {
+        creativita: newPlayer.creativita,
+        movimentoSenzaPalla: newPlayer.movimentoSenzaPalla,
+        finalizzazione: newPlayer.finalizzazione,
+      },
+      mentalitaEComportamento: {
+        leadership: newPlayer.leadership,
+        gestioneStress: newPlayer.gestioneStress,
+        sportivita: newPlayer.sportivita,
+      },
+      valoreTotale: calculateValoreTotale(newPlayer),
+      gol: 0, // Inizializza a 0
+    };
+
+    console.log("Dati inviati al backend:", playerData); // Debug
+
+    axios
+      .post(`${config.apiBaseUrl}/players`, playerData)
+      .then((response) => setPlayers((prev) => [...prev, response.data]))
+      .catch((err) => console.error("Errore durante l'aggiunta del giocatore:", err));
   };
 
   // Funzione per eliminare un giocatore
-  const deletePlayer = (id) => {
-    setPlayers((prevPlayers) => prevPlayers.filter((player) => player.id !== id));
+  const deletePlayer = (name) => {
+    axios
+      .delete(`${config.apiBaseUrl}/players/${name}`)
+      .then(() => setPlayers((prev) => prev.filter((player) => player.name !== name)))
+      .catch((err) => console.error("Errore durante l'eliminazione del giocatore:", err));
   };
 
   // Filtra e ordina i giocatori
@@ -35,88 +146,24 @@ function PlayerList() {
   );
 
   const sortedPlayers = [...filteredPlayers].sort((a, b) => {
-    if (!sortCriteria) return 0; // Nessun ordinamento
+    if (!sortCriteria) return 0;
     return b[sortCriteria] - a[sortCriteria];
   });
-
-  // Funzione per bilanciare le squadre
-  const createTeams = () => {
-    const selectedPlayers = players.filter((player) => player.selected);
-    if (selectedPlayers.length < 2) {
-      alert('Devi selezionare almeno 2 giocatori per creare le squadre!');
-      return;
-    }
-
-    const sorted = [...selectedPlayers].sort(
-      (a, b) => b.attack + b.defense - (a.attack + a.defense)
-    );
-
-    const teamA = [];
-    const teamB = [];
-
-    sorted.forEach((player, index) => {
-      if (index % 2 === 0) {
-        teamA.push(player);
-      } else {
-        teamB.push(player);
-      }
-    });
-
-    console.log('Team A:', teamA);
-    console.log('Team B:', teamB);
-    alert(`Squadre create! Guarda i dettagli nella console.`);
-  };
-
-  // Funzione per selezionare/deselezionare un giocatore
-  const togglePlayerSelection = (id) => {
-    setPlayers((prevPlayers) =>
-      prevPlayers.map((player) =>
-        player.id === id ? { ...player, selected: !player.selected } : player
-      )
-    );
-  };
-
-  // Funzione per aggiungere un nuovo giocatore
-  const addPlayer = (newPlayer) => {
-    const macroCategories = {
-      tecnica: [newPlayer.controlloPalla, newPlayer.dribbling, newPlayer.precisionePassaggi, newPlayer.tiro],
-      resistenza: [newPlayer.stamina, newPlayer.velocita, newPlayer.resistenzaSforzo],
-      tattica: [newPlayer.anticipazione, newPlayer.copertura, newPlayer.adattabilitaTattica],
-      difesa: [newPlayer.contrasto, newPlayer.intercettazioni, newPlayer.coperturaSpazi],
-      attacco: [newPlayer.creativita, newPlayer.movimentoSenzaPalla, newPlayer.finalizzazione],
-      mentalita: [newPlayer.leadership, newPlayer.gestioneStress, newPlayer.sportivita],
-    };
-  
-    const valoreTotale = Object.values(macroCategories)
-      .map((cat) => cat.reduce((sum, val) => sum + val, 0) / cat.length)
-      .reduce((sum, val) => sum + val, 0);
-  
-    setPlayers((prev) => [...prev, { ...newPlayer, id: prev.length + 1, valoreTotale }]);
-  };
-  
 
   return (
     <div className="card">
       <div className="card-header">
         <h2>Lista Giocatori</h2>
-
-        {/* Barra di ricerca */}
+      </div>
+      <div className="card-body">
         <input
           type="text"
           placeholder="Cerca giocatore..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '8px',
-            marginTop: '10px',
-            borderRadius: '4px',
-            border: '1px solid #ddd',
-          }}
+          className="form-control mb-3"
         />
-
-        {/* Pulsanti per ordinamento e creazione squadre */}
-        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px' }}>
           <button onClick={() => setSortCriteria('attack')} className="btn btn-primary btn-sm">
             Ordina per Attacco
           </button>
@@ -126,59 +173,40 @@ function PlayerList() {
           <button onClick={createTeams} className="btn btn-success btn-sm">
             Crea Squadre
           </button>
-          <button
-            onClick={() => setShowAddPlayerModal(true)}
-            className="btn btn-primary btn-sm"
-          >
+          <button onClick={() => setShowAddPlayerModal(true)} className="btn btn-primary btn-sm">
             Aggiungi Giocatore
           </button>
         </div>
       </div>
-
       <div className="card-body">
-        {/* Mostra i giocatori ordinati e filtrati */}
         {sortedPlayers.map((player) => (
-          <div
-            key={player.id}
-            className="player-row"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div>
+          <div key={player.name} className="player-row d-flex justify-content-between align-items-center">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <input
                 type="checkbox"
                 checked={player.selected || false}
-                onChange={() => togglePlayerSelection(player.id)}
-                style={{ marginRight: '10px' }}
+                onChange={() => setPlayers((prev) =>
+                  prev.map((p) => (p.name === player.name ? { ...p, selected: !p.selected } : p))
+                )}
               />
               <span
-                style={{
-                  cursor: 'pointer',
-                  display: 'inline-block',
+                style={{ cursor: 'pointer' }}
+                onMouseEnter={() => {
+                  setSelectedPlayer(player.name); // Passa il nome del giocatore
+                  setIsMouseOver(true);
                 }}
-                onMouseEnter={() => handleMouseEnter(player)}
-                onMouseLeave={handleMouseLeave}
+                onMouseLeave={() => {
+                  setIsMouseOver(false);
+                  setSelectedPlayer(null);
+                }}
               >
                 {player.name} - Valore Totale: {player.valoreTotale || 0}
               </span>
             </div>
-            {/* Pulsante per eliminare il giocatore */}
             {player.selected && (
               <button
-                onClick={() => deletePlayer(player.id)}
-                style={{
-                  border: 'none',
-                  background: 'none',
-                  color: 'red',
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                }}
+                onClick={() => deletePlayer(player.name)}
+                className="btn btn-link text-danger"
               >
                 <i className="bi bi-dash-circle"></i> Rimuovi
               </button>
@@ -186,17 +214,13 @@ function PlayerList() {
           </div>
         ))}
       </div>
-
-      {/* Modale per il giocatore */}
-      {isMouseOver && selectedPlayer && (
+      {selectedPlayer && isMouseOver && (
         <PlayerDetailsModal
-          player={selectedPlayer}
+          playerName={selectedPlayer} // Passa il nome del giocatore
           onMouseEnter={() => setIsMouseOver(true)}
-          onMouseLeave={handleMouseLeave}
+          onMouseLeave={() => setIsMouseOver(false)}
         />
       )}
-
-      {/* Modale per aggiungere un giocatore */}
       <AddPlayerModal
         show={showAddPlayerModal}
         onClose={() => setShowAddPlayerModal(false)}

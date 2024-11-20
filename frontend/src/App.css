@@ -181,3 +181,104 @@ h2 {
   cursor: pointer; /* Cambia il cursore sopra il testo */
   font-weight: 500; /* Testo leggermente più marcato */
 }
+
+
+/* Contenitore delle squadre */
+.team-display {
+  display: flex;
+  justify-content: space-between; /* Spaziatura uniforme tra le squadre */
+  align-items: flex-start; /* Allineamento verticale */
+  gap: 20px; /* Spazio tra le squadre */
+  flex-wrap: nowrap; /* Impedisce che gli elementi vadano a capo */
+  width: 100%; /* Occupa tutta la larghezza disponibile */
+  margin-top: 20px;
+}
+
+/* Card di ogni squadra */
+.team-card {
+  flex: 1; /* Ogni squadra occupa lo stesso spazio */
+  max-width: 45%; /* Limita la larghezza per squadra */
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+}
+
+/* Intestazione di ogni squadra */
+.team-title {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 18px; /* Ridotta la dimensione del testo */
+  margin-bottom: 15px;
+}
+
+
+/* Lista dei giocatori */
+.player-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.player-item {
+  margin: 10px 0;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 5px;
+  text-align: left;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Totale della squadra */
+.team-total {
+  font-weight: bold;
+  margin-top: 15px;
+  color: #333;
+}
+
+.match-history {
+  margin-top: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.history-title {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: #333;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.history-table thead th {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px;
+}
+
+.history-table tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.history-table tbody tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.history-table td, .history-table th {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+.history-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
