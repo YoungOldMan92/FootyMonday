@@ -37,21 +37,53 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
 
   const createTeams = () => {
     const selectedPlayers = players.filter((player) => player.selected);
-    if (selectedPlayers.length < 2) {
-      alert("Seleziona almeno 2 giocatori per creare le squadre!");
+    if (selectedPlayers.length < 2 || selectedPlayers.length % 2 !== 0) {
+      alert("Seleziona un numero pari di giocatori maggiore o uguale a 2 per creare le squadre!");
       return;
     }
-
-    // Mescola casualmente i giocatori selezionati
-    const shuffledPlayers = [...selectedPlayers].sort(() => 0.5 - Math.random());
-
-    // Divide i giocatori in due squadre bilanciate
-    const teamSize = Math.floor(shuffledPlayers.length / 2);
-    const teamA = shuffledPlayers.slice(0, teamSize);
-    const teamB = shuffledPlayers.slice(teamSize);
-
+  
+    // Funzione per calcolare il valore complessivo del ruolo
+    const calculateTeamValue = (team) =>
+      team.reduce((total, player) => total + player.valoreTotale + (player.gol || 0), 0);
+  
+    // Dividi i giocatori per ruolo
+    const attackers = selectedPlayers.filter((p) => p.ruolo === 'Attaccante');
+    const defenders = selectedPlayers.filter((p) => p.ruolo === 'Difensore');
+    const midfielders = selectedPlayers.filter((p) => p.ruolo === 'Centrocampista');
+  
+    // Funzione per distribuire i ruoli equamente
+    const distributeRoles = (playersByRole) => {
+      const shuffled = [...playersByRole].sort(() => 0.5 - Math.random());
+      const half = Math.floor(shuffled.length / 2);
+      return [shuffled.slice(0, half), shuffled.slice(half)];
+    };
+  
+    // Distribuisci i ruoli
+    const [teamAAttackers, teamBAttackers] = distributeRoles(attackers);
+    const [teamADefenders, teamBDefenders] = distributeRoles(defenders);
+    const [teamAMidfielders, teamBMidfielders] = distributeRoles(midfielders);
+  
+    // Combina i ruoli per formare le squadre
+    let teamA = [...teamAAttackers, ...teamADefenders, ...teamAMidfielders];
+    let teamB = [...teamBAttackers, ...teamBDefenders, ...teamBMidfielders];
+  
+    // Bilancia il numero di giocatori in ogni squadra
+    while (teamA.length > teamB.length) {
+      teamB.push(teamA.pop());
+    }
+    while (teamB.length > teamA.length) {
+      teamA.push(teamB.pop());
+    }
+  
+    // Bilancia le squadre
+    const teamAValue = calculateTeamValue(teamA);
+    const teamBValue = calculateTeamValue(teamB);
+  
+    console.log(`Valore Squadra A: ${teamAValue}, Valore Squadra B: ${teamBValue}`);
+  
     onTeamsUpdate({ teamA, teamB });
   };
+  
 
   const updateRoles = async () => {
     try {
