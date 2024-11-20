@@ -16,7 +16,7 @@ function TeamDisplay({ teamA, teamB }) {
           {teamA.map((player) => (
             <li key={player.id} className="player-item">
               <strong>{player.name}</strong> <br />
-              Valore: {player.valoreTotale} <br />
+              Ruolo: {player.ruolo || 'Non assegnato'} <br />
             </li>
           ))}
         </ul>
@@ -30,7 +30,7 @@ function TeamDisplay({ teamA, teamB }) {
           {teamB.map((player) => (
             <li key={player.id} className="player-item">
               <strong>{player.name}</strong> <br />
-              Valore: {player.valoreTotale} <br />
+              Ruolo: {player.ruolo || 'Non assegnato'} <br />
             </li>
           ))}
         </ul>
