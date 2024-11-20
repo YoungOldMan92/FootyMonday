@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../config';
 import AddPlayerModal from './AddPlayerModal';
+import MatchHistory from './MatchHistory';
 
 function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
   const [players, setPlayers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortCriteria, setSortCriteria] = useState(null);
   const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
+  const [matchHistory, setMatchHistory] = useState([]);
+  const [teamA, setTeamA] = useState([]);
+  const [teamB, setTeamB] = useState([]);
 
   useEffect(() => {
     axios
@@ -41,49 +45,48 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
       alert("Seleziona un numero pari di giocatori maggiore o uguale a 2 per creare le squadre!");
       return;
     }
-  
-    // Funzione per calcolare il valore complessivo del ruolo
+
     const calculateTeamValue = (team) =>
       team.reduce((total, player) => total + player.valoreTotale + (player.gol || 0), 0);
-  
-    // Dividi i giocatori per ruolo
+
     const attackers = selectedPlayers.filter((p) => p.ruolo === 'Attaccante');
     const defenders = selectedPlayers.filter((p) => p.ruolo === 'Difensore');
     const midfielders = selectedPlayers.filter((p) => p.ruolo === 'Centrocampista');
-  
-    // Funzione per distribuire i ruoli equamente
+
     const distributeRoles = (playersByRole) => {
       const shuffled = [...playersByRole].sort(() => 0.5 - Math.random());
       const half = Math.floor(shuffled.length / 2);
       return [shuffled.slice(0, half), shuffled.slice(half)];
     };
-  
-    // Distribuisci i ruoli
+
     const [teamAAttackers, teamBAttackers] = distributeRoles(attackers);
     const [teamADefenders, teamBDefenders] = distributeRoles(defenders);
     const [teamAMidfielders, teamBMidfielders] = distributeRoles(midfielders);
-  
-    // Combina i ruoli per formare le squadre
+
     let teamA = [...teamAAttackers, ...teamADefenders, ...teamAMidfielders];
     let teamB = [...teamBAttackers, ...teamBDefenders, ...teamBMidfielders];
-  
-    // Bilancia il numero di giocatori in ogni squadra
+
     while (teamA.length > teamB.length) {
       teamB.push(teamA.pop());
     }
     while (teamB.length > teamA.length) {
       teamA.push(teamB.pop());
     }
-  
-    // Bilancia le squadre
+
     const teamAValue = calculateTeamValue(teamA);
     const teamBValue = calculateTeamValue(teamB);
-  
+
+    setTeamA(teamA);
+    setTeamB(teamB);
     console.log(`Valore Squadra A: ${teamAValue}, Valore Squadra B: ${teamBValue}`);
-  
+
     onTeamsUpdate({ teamA, teamB });
   };
-  
+
+  const saveMatchResults = (teamAGoals, teamBGoals) => {
+    const latestMatch = { teamA, teamB, teamAGoals, teamBGoals };
+    setMatchHistory((prevHistory) => [...prevHistory, latestMatch]);
+  };
 
   const updateRoles = async () => {
     try {
@@ -166,7 +169,7 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
             <div className={`card h-100 player-card ${player.selected ? 'selected' : ''}`}>
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); // Evita di attivare la selezione
+                  e.stopPropagation();
                   deletePlayer(player.name);
                 }}
                 className="delete-button"
