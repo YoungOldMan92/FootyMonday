@@ -53,6 +53,17 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
     onTeamsUpdate({ teamA, teamB });
   };
 
+  const updateRoles = async () => {
+    try {
+      const response = await axios.post(`${config.apiBaseUrl}/players/update-roles`);
+      alert(response.data.message);
+      setPlayers(response.data.updatedPlayers);
+    } catch (error) {
+      console.error('Errore durante l\'aggiornamento dei ruoli:', error);
+      alert('Errore durante l\'aggiornamento dei ruoli');
+    }
+  };
+
   const filteredPlayers = players.filter((player) =>
     player.name && player.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -89,10 +100,16 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
             Ordina per Difesa
           </button>
           <button
-            onClick={createTeams} // Aggiunta della funzione per creare le squadre
+            onClick={createTeams}
             className="btn btn-outline-success btn-sm"
           >
             Crea Squadre
+          </button>
+          <button
+            onClick={updateRoles}
+            className="btn btn-outline-info btn-sm"
+          >
+            Aggiorna Ruoli
           </button>
           <button
             onClick={() => setShowAddPlayerModal(true)}
@@ -127,8 +144,11 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
               </button>
               <div className="card-body">
                 <h5 className="card-title">{player.name}</h5>
-                <p className="card-text">
+                <p className="card-text small-text">
                   <strong>Valore Totale:</strong> {player.valoreTotale || 0}
+                </p>
+                <p className="card-text small-text">
+                  <strong>Ruolo:</strong> {player.ruolo || 'Non assegnato'}
                 </p>
               </div>
             </div>

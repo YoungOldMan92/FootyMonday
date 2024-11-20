@@ -111,6 +111,13 @@ h2 {
   border-bottom: 1px solid #ddd;
 }
 
+.card-text.small-text {
+  font-size: 0.8rem !important; /* Riduce il testo con priorità alta */
+  color: #6c757d; /* Colore grigio */
+}
+
+
+
 /* Animazione solo per le card dei giocatori */
 .player-card {
   border: 1px solid #ddd;
