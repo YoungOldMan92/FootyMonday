@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import GolUpdateModal from './GolUpdateModal';
 
 function TeamDisplay({ teamA, teamB }) {
+  const [showModal, setShowModal] = useState(false);
+
   if (!teamA || !teamB) {
     return <p className="text-center">Non ci sono squadre da mostrare.</p>;
   }
@@ -38,6 +41,19 @@ function TeamDisplay({ teamA, teamB }) {
           <strong>Valore Totale: {calculateTeamValue(teamB)}</strong>
         </p>
       </div>
+      <button
+        className="btn btn-primary mt-3"
+        onClick={() => setShowModal(true)}
+      >
+        Aggiorna Gol
+      </button>
+
+      <GolUpdateModal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        teamA={teamA}
+        teamB={teamB}
+      />
     </div>
   );
 }
