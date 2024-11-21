@@ -29,7 +29,7 @@ function GoalLeaderboard() {
       <div className="card-body">
         {leaderboard.map((player, index) => (
           <div
-            key={player.id}
+            key={`leaderboard-${player.id || player.name}-${index}`}
             className="leaderboard-row d-flex justify-content-between align-items-center"
           >
             <span>

@@ -331,3 +331,73 @@ h2 {
   background-color: #f1f1f1;
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* Overlay scuro */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #ffffff; /* Sfondo pieno */
+  border-radius: 8px;
+  padding: 20px;
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.3s ease-out, fadeIn 0.3s ease-out;
+}
+
+.modal-title {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.modal-body {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.team-section {
+  width: 45%;
+}
+
+.player-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.player-name {
+  margin-right: 10px;
+}
+
+.goal-input {
+  width: 60px;
+  padding: 5px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.btn-success,
+.btn-secondary {
+  margin: 5px;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}

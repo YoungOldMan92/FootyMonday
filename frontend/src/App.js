@@ -9,9 +9,15 @@ import PlayerRadarChart from './components/PlayerRadarChart'; // Importa il comp
 function App() {
   const [teams, setTeams] = useState({ teamA: null, teamB: null });
   const [hoveredPlayer, setHoveredPlayer] = useState(null); // Stato per il giocatore selezionato
+  const [matchHistory, setMatchHistory] = useState([]); // Stato per lo storico delle partite
 
   const handleTeamsUpdate = (newTeams) => {
     setTeams(newTeams);
+  };
+
+  // Funzione per aggiungere una nuova partita allo storico
+  const handleAddMatch = (newMatch) => {
+    setMatchHistory((prevHistory) => [...prevHistory, newMatch]);
   };
 
   return (
@@ -31,15 +37,19 @@ function App() {
           </div>
           <div className="col-md-6">
             <GoalLeaderboard />
-            <br></br>
+            <br />
             <PlayerRadarChart player={hoveredPlayer} /> {/* Aggiungi il grafico sotto */}
           </div>
         </div>
         <div className="mt-4">
-          <TeamDisplay teamA={teams.teamA} teamB={teams.teamB} />
+          <TeamDisplay
+            teamA={teams.teamA}
+            teamB={teams.teamB}
+            onAddMatch={handleAddMatch} // Passa la funzione onAddMatch a TeamDisplay
+          />
         </div>
         <div className="mt-4">
-          <MatchHistory />
+          <MatchHistory history={matchHistory} /> {/* Passa lo storico delle partite */}
         </div>
       </main>
     </div>

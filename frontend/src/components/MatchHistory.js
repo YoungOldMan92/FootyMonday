@@ -1,81 +1,69 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Carousel } from 'react-bootstrap';
+import axios from 'axios';
+import config from '../config';
 
-function MatchHistory({ history, onSaveResults }) {
-  const [editingMatchIndex, setEditingMatchIndex] = useState(null);
-  const [teamAGoals, setTeamAGoals] = useState(0);
-  const [teamBGoals, setTeamBGoals] = useState(0);
+function MatchHistory() {
+  const [history, setHistory] = useState([]);
+
+  // Recupera le partite dal database all'avvio
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        const response = await axios.get(`${config.apiBaseUrl}/matches`);
+        setHistory(response.data);
+      } catch (error) {
+        console.error('Errore durante il recupero delle partite:', error);
+      }
+    };
+
+    fetchMatches();
+  }, []);
 
   if (!history || history.length === 0) {
     return <p className="text-center">Non ci sono partite da mostrare.</p>;
   }
 
-  const handleEditClick = (index, match) => {
-    setEditingMatchIndex(index);
-    setTeamAGoals(match.teamAGoals || 0);
-    setTeamBGoals(match.teamBGoals || 0);
-  };
-
-  const handleSaveClick = () => {
-    if (editingMatchIndex !== null) {
-      onSaveResults(editingMatchIndex, teamAGoals, teamBGoals);
-      setEditingMatchIndex(null);
-    }
-  };
+  // Mostra solo le ultime 3 partite
+  const latestMatches = history.slice(-3).reverse();
 
   return (
     <div className="match-history">
-      <h3 className="history-title">Storico delle Partite</h3>
-      <table className="history-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Squadra A</th>
-            <th>Gol A</th>
-            <th>Squadra B</th>
-            <th>Gol B</th>
-            <th>Azioni</th>
-          </tr>
-        </thead>
-        <tbody>
-          {history.map((match, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{match.teamA.map((player) => player.name).join(', ')}</td>
-              <td>{match.teamAGoals || 0}</td>
-              <td>{match.teamB.map((player) => player.name).join(', ')}</td>
-              <td>{match.teamBGoals || 0}</td>
-              <td>
-                {editingMatchIndex === index ? (
-                  <div>
-                    <input
-                      type="number"
-                      value={teamAGoals}
-                      onChange={(e) => setTeamAGoals(Number(e.target.value))}
-                      placeholder="Gol Squadra A"
-                    />
-                    <input
-                      type="number"
-                      value={teamBGoals}
-                      onChange={(e) => setTeamBGoals(Number(e.target.value))}
-                      placeholder="Gol Squadra B"
-                    />
-                    <button onClick={handleSaveClick} className="btn btn-primary btn-sm">
-                      Salva
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handleEditClick(index, match)}
-                    className="btn btn-secondary btn-sm"
-                  >
-                    Modifica Risultati
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h3>Storico delle Partite</h3>
+      <Carousel>
+        {latestMatches.map((match, index) => (
+          <Carousel.Item key={index}>
+            <div className="match-card">
+              <h4>Partita {history.length - index}</h4>
+              <p className="match-date">
+                Data: {match.date ? new Date(match.date).toLocaleDateString() : 'Data non disponibile'}
+              </p>
+              <div className="teams-container" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="team-section" style={{ flex: 1, marginRight: '10px' }}>
+                  <h5>Squadra A</h5>
+                  <ul>
+                    {match.teamA.map((player, playerIndex) => (
+                      <li key={`teamA-${player.id || player.name}-${playerIndex}`}>
+                        {player.name}: {player.gol || 0} gol
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="team-section" style={{ flex: 1, marginLeft: '10px' }}>
+                  <h5>Squadra B</h5>
+                  <ul>
+                    {match.teamB.map((player, playerIndex) => (
+                      <li key={`teamB-${player.id || player.name}-${playerIndex}`}>
+                        {player.name}: {player.gol || 0} gol
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </Carousel.Item>
+        ))}
+      </Carousel>
     </div>
   );
 }
