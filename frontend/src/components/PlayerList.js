@@ -99,6 +99,20 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
     }
   };
 
+  const recalculateValues = async () => {
+    try {
+      const response = await axios.post(`${config.apiBaseUrl}/players/recalculate-values`);
+      alert(response.data.message);
+
+      // Ricarica i giocatori aggiornati
+      const updatedPlayers = await axios.get(`${config.apiBaseUrl}/players`);
+      setPlayers(updatedPlayers.data);
+    } catch (error) {
+      console.error('Errore durante il ricalcolo dei valori:', error);
+      alert('Errore durante il ricalcolo dei valori. Controlla la console per i dettagli.');
+    }
+  };
+
   const filteredPlayers = players.filter((player) =>
     player.name && player.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -147,6 +161,12 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
             Aggiorna Ruoli
           </button>
           <button
+            onClick={recalculateValues}
+            className="btn btn-outline-warning btn-sm"
+          >
+            Ricalcola Valori
+          </button>
+          <button
             onClick={() => setShowAddPlayerModal(true)}
             className="btn btn-outline-primary btn-sm"
           >
@@ -193,9 +213,7 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
       <AddPlayerModal
         show={showAddPlayerModal}
         onClose={() => setShowAddPlayerModal(false)}
-        onSubmit={(newPlayer) =>
-          setPlayers((prev) => [...prev, { ...newPlayer, selected: false }])
-        }
+        setPlayers={setPlayers}
       />
     </div>
   );

@@ -337,7 +337,7 @@ h2 {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6); /* Overlay scuro */
+  background: rgba(0, 0, 0, 0.8); /* Sfondo scuro non trasparente */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -356,8 +356,9 @@ h2 {
 
 .modal-title {
   text-align: center;
+  font-size: 24px;
   margin-bottom: 20px;
-  font-size: 1.5rem;
+  color: #61dafb;
 }
 
 .modal-body {
@@ -390,8 +391,9 @@ h2 {
 }
 
 .modal-footer {
-  text-align: center;
-  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end; /* Pulsanti allineati a destra */
+  gap: 10px;
 }
 
 .btn-success,
@@ -400,4 +402,139 @@ h2 {
   padding: 10px 15px;
   border-radius: 4px;
   cursor: pointer;
+}
+
+
+.styled-modal {
+  background: #1f2937; /* Colore scuro per il modale */
+  color: #f9f9f9;
+  border-radius: 10px;
+  padding: 30px;
+  width: 70%;
+  max-width: 600px;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.styled-title {
+  text-align: left; /* Sposta la scritta a sinistra */
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #61dafb;
+}
+
+.styled-teams {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.styled-team {
+  background: #2d3748; /* Colore distintivo per le squadre */
+  padding: 20px;
+  border-radius: 8px;
+  flex: 1;
+}
+
+.team-a {
+  border-left: 4px solid #61dafb;
+}
+
+.team-b {
+  border-left: 4px solid #f56565;
+}
+
+.styled-player-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.styled-player-name {
+  flex: 1;
+}
+
+.styled-goal-input {
+  width: 60px;
+  padding: 5px;
+  border: 2px solid #61dafb;
+  border-radius: 4px;
+  background-color: #1a202c;
+  color: #f9f9f9;
+  text-align: center;
+}
+
+.styled-btn {
+  padding: 10px 15px;
+  margin: 10px;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.save-btn {
+  background-color: #38a169;
+  color: white;
+}
+
+.save-btn:hover {
+  background-color: #2f855a;
+}
+
+.close-btn {
+  background-color: #e53e3e;
+  color: white;
+}
+
+.close-btn:hover {
+  background-color: #c53030;
+}
+
+.teams-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.team-section {
+  flex: 1;
+  margin: 0 10px;
+}
+
+.team-a h4 {
+  color: #007bff;
+}
+
+.team-b h4 {
+  color: #28a745;
+}
+
+.player-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 5px 0;
+}
+
+.goal-input {
+  width: 60px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.styled-button {
+  margin: 0 5px;
+  padding: 10px 15px;
+  border-radius: 4px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

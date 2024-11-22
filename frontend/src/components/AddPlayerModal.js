@@ -1,59 +1,70 @@
 import React from 'react';
-import Papa from 'papaparse';
 
-function AddPlayerModal({ show, onClose, onSubmit }) {
-  const handleCsvUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        if (results.data && results.data.length > 0) {
-          results.data.forEach((player) => {
-            const parsedPlayer = parsePlayerData(player);
-            onSubmit(parsedPlayer);
-          });
-          alert(`${results.data.length} giocatori importati con successo!`);
-        }
-      },
-      error: (error) => {
-        alert('Errore nella lettura del file CSV: ' + error.message);
-      },
+function AddPlayerModal({ show, onClose, setPlayers }) {
+  const addPlayer = async (playerData) => {
+  try {
+    const response = await fetch('http://localhost:5000/api/players', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(playerData),
     });
-  };
+
+    if (!response.ok) {
+      throw new Error(`Errore HTTP: ${response.status}`);
+    }
+
+    const savedPlayer = await response.json();
+    setPlayers((prevPlayers) => [...prevPlayers, savedPlayer]);
+  } catch (error) {
+    console.error('Errore durante la creazione del giocatore:', error.message);
+    alert('Errore durante il salvataggio del giocatore.');
+  }
+};
 
   const parsePlayerData = (data) => ({
     name: data.nome || 'Sconosciuto',
-    controlloPalla: Number(data.controlloPalla) || 0,
-    dribbling: Number(data.dribbling) || 0,
-    precisionePassaggi: Number(data.precisionePassaggi) || 0,
-    tiro: Number(data.tiro) || 0,
-    stamina: Number(data.stamina) || 0,
-    velocita: Number(data.velocita) || 0,
-    resistenzaSforzo: Number(data.resistenzaSforzo) || 0,
-    anticipazione: Number(data.anticipazione) || 0,
-    copertura: Number(data.copertura) || 0,
-    adattabilitaTattica: Number(data.adattabilitaTattica) || 0,
-    contrasto: Number(data.contrasto) || 0,
-    intercettazioni: Number(data.intercettazioni) || 0,
-    coperturaSpazi: Number(data.coperturaSpazi) || 0,
-    creativita: Number(data.creativita) || 0,
-    movimentoSenzaPalla: Number(data.movimentoSenzaPalla) || 0,
-    finalizzazione: Number(data.finalizzazione) || 0,
-    leadership: Number(data.leadership) || 0,
-    gestioneStress: Number(data.gestioneStress) || 0,
-    sportivita: Number(data.sportivita) || 0,
+    capacitaTecnica: {
+      controlloPalla: Number(data.controlloPalla) || 0,
+      dribbling: Number(data.dribbling) || 0,
+      precisionePassaggi: Number(data.precisionePassaggi) || 0,
+      tiro: Number(data.tiro) || 0,
+    },
+    resistenzaFisica: {
+      stamina: Number(data.stamina) || 0,
+      velocita: Number(data.velocita) || 0,
+      resistenzaSforzo: Number(data.resistenzaSforzo) || 0,
+    },
+    posizionamentoTattico: {
+      anticipazione: Number(data.anticipazione) || 0,
+      copertura: Number(data.copertura) || 0,
+      adattabilitaTattica: Number(data.adattabilitaTattica) || 0,
+    },
+    capacitaDifensiva: {
+      contrasto: Number(data.contrasto) || 0,
+      intercettazioni: Number(data.intercettazioni) || 0,
+      coperturaSpazi: Number(data.coperturaSpazi) || 0,
+    },
+    contributoInAttacco: {
+      creativita: Number(data.creativita) || 0,
+      movimentoSenzaPalla: Number(data.movimentoSenzaPalla) || 0,
+      finalizzazione: Number(data.finalizzazione) || 0,
+    },
+    mentalitaEComportamento: {
+      leadership: Number(data.leadership) || 0,
+      gestioneStress: Number(data.gestioneStress) || 0,
+      sportivita: Number(data.sportivita) || 0,
+    },
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const playerData = parsePlayerData(Object.fromEntries(formData.entries()));
-    onSubmit(playerData);
+
+    console.log('Dati inviati al backend:', playerData); // Debug dei dati inviati
+    addPlayer(playerData); // Invio al backend
     e.target.reset();
-    onClose(); // Chiudi il modale dopo l'aggiunta
+    onClose();
   };
 
   if (!show) return null;
@@ -113,10 +124,6 @@ function AddPlayerModal({ show, onClose, onSubmit }) {
           Aggiungi
         </button>
       </form>
-      <div style={{ marginTop: '15px' }}>
-        <label htmlFor="csv-upload">Carica Giocatori tramite CSV:</label>
-        <input id="csv-upload" type="file" accept=".csv" onChange={handleCsvUpload} />
-      </div>
     </div>
   );
 }
