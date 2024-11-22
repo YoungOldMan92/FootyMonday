@@ -6,13 +6,12 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
   const [updatedTeamA, setUpdatedTeamA] = useState([]);
   const [updatedTeamB, setUpdatedTeamB] = useState([]);
 
-  // Inizializza i gol a 0 quando il modale viene aperto
   useEffect(() => {
     if (show) {
       const resetGoals = (team) =>
         team.map((player) => ({
           ...player,
-          gol: 0, // Forza l'inizializzazione dei gol a 0
+          gol: 0,
         }));
 
       setUpdatedTeamA(resetGoals(teamA));
@@ -42,11 +41,10 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
     const matchData = {
       teamA: updatedTeamA,
       teamB: updatedTeamB,
-      date: new Date().toISOString(), // Aggiungi la data corrente
+      date: new Date().toISOString(),
     };
 
     try {
-      // Somma i gol nel database
       const updates = [...updatedTeamA, ...updatedTeamB].map((player) => ({
         name: player.name,
         additionalGoals: player.gol,
@@ -54,11 +52,10 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
 
       await axios.post(`${config.apiBaseUrl}/players/update-goals`, { updates });
 
-      // Salva la partita
       await axios.post(`${config.apiBaseUrl}/matches`, matchData);
 
-      onAddMatch(matchData); // Aggiunge la partita al componente MatchHistory
-      onResetTeams(); // Resetta le squadre
+      onAddMatch(matchData);
+      onResetTeams();
       alert('Partita salvata con successo!');
       onClose();
     } catch (err) {
@@ -70,48 +67,50 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
   if (!show) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <h3 className="modal-title">Aggiorna Gol</h3>
-        <div className="modal-body">
-          <div className="team-section">
-            <h4>Squadra A</h4>
-            {updatedTeamA.map((player, index) => (
-              <div key={`teamA-${player.id || player.name}-${index}`} className="player-item">
-                <span className="player-name">{player.name}</span>
-                <input
-                  type="number"
-                  value={player.gol}
-                  onChange={(e) =>
-                    handleGoalChange('teamA', index, Number(e.target.value))
-                  }
-                  className="goal-input"
-                />
-              </div>
-            ))}
-          </div>
-          <div className="team-section">
-            <h4>Squadra B</h4>
-            {updatedTeamB.map((player, index) => (
-              <div key={`teamB-${player.id || player.name}-${index}`} className="player-item">
-                <span className="player-name">{player.name}</span>
-                <input
-                  type="number"
-                  value={player.gol}
-                  onChange={(e) =>
-                    handleGoalChange('teamB', index, Number(e.target.value))
-                  }
-                  className="goal-input"
-                />
-              </div>
-            ))}
+    <div className="modal-overlay styled-overlay">
+      <div className="modal-content styled-modal">
+        <h3 className="modal-title styled-title">Aggiorna Risultati</h3>
+        <div className="modal-body styled-body">
+          <div className="teams-container styled-teams">
+            <div className="team-section styled-team team-a">
+              <h4>Squadra A</h4>
+              {updatedTeamA.map((player, index) => (
+                <div key={`teamA-${player.id || player.name}-${index}`} className="player-item styled-player-item">
+                  <span className="player-name styled-player-name">{player.name}</span>
+                  <input
+                    type="number"
+                    value={player.gol}
+                    onChange={(e) =>
+                      handleGoalChange('teamA', index, Number(e.target.value))
+                    }
+                    className="goal-input styled-goal-input"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="team-section styled-team team-b">
+              <h4>Squadra B</h4>
+              {updatedTeamB.map((player, index) => (
+                <div key={`teamB-${player.id || player.name}-${index}`} className="player-item styled-player-item">
+                  <span className="player-name styled-player-name">{player.name}</span>
+                  <input
+                    type="number"
+                    value={player.gol}
+                    onChange={(e) =>
+                      handleGoalChange('teamB', index, Number(e.target.value))
+                    }
+                    className="goal-input styled-goal-input"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="modal-footer">
-          <button onClick={saveMatchToDatabase} className="btn btn-success">
+        <div className="modal-footer styled-footer">
+          <button onClick={saveMatchToDatabase} className="btn styled-btn save-btn">
             Salva Partita
           </button>
-          <button onClick={onClose} className="btn btn-secondary">
+          <button onClick={onClose} className="btn styled-btn close-btn">
             Chiudi
           </button>
         </div>
