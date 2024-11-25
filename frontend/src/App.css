@@ -490,6 +490,20 @@ h2 {
   background-color: #c53030;
 }
 
+.match-history {
+  margin: 20px auto;
+  max-width: 800px;
+}
+
+.match-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.match-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
 .teams-container {
   display: flex;
   justify-content: space-between;

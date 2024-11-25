@@ -14,10 +14,22 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
   const [teamB, setTeamB] = useState([]);
 
   useEffect(() => {
+    // Fetch players from the backend
     axios
       .get(`${config.apiBaseUrl}/players`)
       .then((response) => setPlayers(response.data))
       .catch((err) => console.error("Errore durante il caricamento dei giocatori:", err));
+
+    // Fetch existing teams from the backend
+    axios
+      .get(`${config.apiBaseUrl}/teams`)
+      .then((response) => {
+        if (response.data.teams) {
+          setTeamA(response.data.teams[0]);
+          setTeamB(response.data.teams[1]);
+        }
+      })
+      .catch((err) => console.error("Errore durante il caricamento delle squadre:", err));
   }, []);
 
   const togglePlayerSelection = (name) => {
@@ -49,38 +61,45 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
     const calculateTeamValue = (team) =>
       team.reduce((total, player) => total + player.valoreTotale + (player.gol || 0), 0);
 
-    const attackers = selectedPlayers.filter((p) => p.ruolo === 'Attaccante');
-    const defenders = selectedPlayers.filter((p) => p.ruolo === 'Difensore');
-    const midfielders = selectedPlayers.filter((p) => p.ruolo === 'Centrocampista');
-
     const distributeRoles = (playersByRole) => {
       const shuffled = [...playersByRole].sort(() => 0.5 - Math.random());
       const half = Math.floor(shuffled.length / 2);
       return [shuffled.slice(0, half), shuffled.slice(half)];
     };
 
+    const attackers = selectedPlayers.filter((p) => p.ruolo === 'Attaccante');
+    const defenders = selectedPlayers.filter((p) => p.ruolo === 'Difensore');
+    const midfielders = selectedPlayers.filter((p) => p.ruolo === 'Centrocampista');
+
     const [teamAAttackers, teamBAttackers] = distributeRoles(attackers);
     const [teamADefenders, teamBDefenders] = distributeRoles(defenders);
     const [teamAMidfielders, teamBMidfielders] = distributeRoles(midfielders);
 
-    let teamA = [...teamAAttackers, ...teamADefenders, ...teamAMidfielders];
-    let teamB = [...teamBAttackers, ...teamBDefenders, ...teamBMidfielders];
+    let newTeamA = [...teamAAttackers, ...teamADefenders, ...teamAMidfielders];
+    let newTeamB = [...teamBAttackers, ...teamBDefenders, ...teamBMidfielders];
 
-    while (teamA.length > teamB.length) {
-      teamB.push(teamA.pop());
+    while (newTeamA.length > newTeamB.length) {
+      newTeamB.push(newTeamA.pop());
     }
-    while (teamB.length > teamA.length) {
-      teamA.push(teamB.pop());
+    while (newTeamB.length > newTeamA.length) {
+      newTeamA.push(newTeamB.pop());
     }
 
-    const teamAValue = calculateTeamValue(teamA);
-    const teamBValue = calculateTeamValue(teamB);
+    const teamAValue = calculateTeamValue(newTeamA);
+    const teamBValue = calculateTeamValue(newTeamB);
 
-    setTeamA(teamA);
-    setTeamB(teamB);
-    console.log(`Valore Squadra A: ${teamAValue}, Valore Squadra B: ${teamBValue}`);
+    // Aggiorna immediatamente il componente TeamDisplay
+    if (typeof onTeamsUpdate === 'function') {
+      onTeamsUpdate(newTeamA, newTeamB);
+    }
 
-    onTeamsUpdate({ teamA, teamB });
+    // Salva le squadre nel backend
+    axios
+      .post(`${config.apiBaseUrl}/teams`, { teamA: newTeamA, teamB: newTeamB })
+      .then(() => {
+        console.log('Squadre salvate nel backend.');
+      })
+      .catch((err) => console.error("Errore durante il salvataggio delle squadre:", err));
   };
 
   const saveMatchResults = (teamAGoals, teamBGoals) => {
@@ -178,9 +197,7 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
         {sortedPlayers.map((player) => (
           <div
             key={player.name}
-            className={`col-md-4 mb-3 ${
-              player.selected ? 'selected' : ''
-            }`}
+            className={`col-md-4 mb-3 ${player.selected ? 'selected' : ''}`}
             onClick={() => togglePlayerSelection(player.name)}
             onMouseEnter={() => setHoveredPlayer(player)}
             onMouseLeave={() => setHoveredPlayer(null)}
