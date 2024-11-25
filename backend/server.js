@@ -6,6 +6,7 @@ const cors = require('cors');
 
 const playerRoutes = require('./routes/playerRoutes');
 const matchRoutes = require('./routes/matchRoutes');
+const teamRoutes = require('./routes/teamRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,3 +34,4 @@ app.listen(PORT, () => {
 
 app.use('/api/players', playerRoutes);
 app.use('/api/matches', matchRoutes);
+app.use('/api/teams', teamRoutes);

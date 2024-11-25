@@ -29,32 +29,31 @@ function MatchHistory() {
 
   return (
     <div className="match-history">
-      <h3>Storico delle Partite</h3>
+      <h3 className="text-center mb-4">Storico delle Partite</h3>
       <Carousel>
         {latestMatches.map((match, index) => (
           <Carousel.Item key={index}>
-            <div className="match-card">
-              <h4>Partita {history.length - index}</h4>
-              <p className="match-date">
-                Data: {match.date ? new Date(match.date).toLocaleDateString() : 'Data non disponibile'}
-              </p>
-              <div className="teams-container" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div className="team-section" style={{ flex: 1, marginRight: '10px' }}>
-                  <h5>Squadra A</h5>
-                  <ul>
+            <div className="match-card p-4 rounded shadow-lg">
+              <h4 className="text-center mb-3">Data: {match.date ? new Date(match.date).toLocaleDateString() : 'Data non disponibile'}</h4>
+              <div className="teams-container d-flex justify-content-between">
+                <div className="team-section p-3" style={{ backgroundColor: '#eaf4fc', borderRadius: '8px' }}>
+                  <h5 className="text-primary">Squadra A</h5>
+                  <ul className="list-unstyled">
                     {match.teamA.map((player, playerIndex) => (
-                      <li key={`teamA-${player.id || player.name}-${playerIndex}`}>
-                        {player.name}: {player.gol || 0} gol
+                      <li key={`teamA-${player.id || player.name}-${playerIndex}`} className="d-flex align-items-center">
+                        <span className="me-2">{player.name}</span>
+                        <span className="badge bg-success">{player.gol || 0} gol</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="team-section" style={{ flex: 1, marginLeft: '10px' }}>
-                  <h5>Squadra B</h5>
-                  <ul>
+                <div className="team-section p-3" style={{ backgroundColor: '#fdecea', borderRadius: '8px' }}>
+                  <h5 className="text-danger">Squadra B</h5>
+                  <ul className="list-unstyled">
                     {match.teamB.map((player, playerIndex) => (
-                      <li key={`teamB-${player.id || player.name}-${playerIndex}`}>
-                        {player.name}: {player.gol || 0} gol
+                      <li key={`teamB-${player.id || player.name}-${playerIndex}`} className="d-flex align-items-center">
+                        <span className="me-2">{player.name}</span>
+                        <span className="badge bg-success">{player.gol || 0} gol</span>
                       </li>
                     ))}
                   </ul>

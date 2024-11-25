@@ -5,6 +5,7 @@ import config from '../config';
 function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch }) {
   const [updatedTeamA, setUpdatedTeamA] = useState([]);
   const [updatedTeamB, setUpdatedTeamB] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (show) {
@@ -38,6 +39,8 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
       return;
     }
 
+    setIsSaving(true); // Start saving state
+
     const matchData = {
       teamA: updatedTeamA,
       teamB: updatedTeamB,
@@ -55,12 +58,18 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
       await axios.post(`${config.apiBaseUrl}/matches`, matchData);
 
       onAddMatch(matchData);
+
+      // Clear temporary teams in backend after saving match
+      await axios.delete(`${config.apiBaseUrl}/teams`);
+
       onResetTeams();
       alert('Partita salvata con successo!');
       onClose();
     } catch (err) {
       console.error('Errore durante il salvataggio della partita:', err);
       alert('Errore durante il salvataggio della partita.');
+    } finally {
+      setIsSaving(false); // End saving state
     }
   };
 
@@ -84,6 +93,7 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
                       handleGoalChange('teamA', index, Number(e.target.value))
                     }
                     className="goal-input styled-goal-input"
+                    disabled={isSaving}
                   />
                 </div>
               ))}
@@ -100,6 +110,7 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
                       handleGoalChange('teamB', index, Number(e.target.value))
                     }
                     className="goal-input styled-goal-input"
+                    disabled={isSaving}
                   />
                 </div>
               ))}
@@ -107,10 +118,14 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
           </div>
         </div>
         <div className="modal-footer styled-footer">
-          <button onClick={saveMatchToDatabase} className="btn styled-btn save-btn">
-            Salva Partita
+          <button
+            onClick={saveMatchToDatabase}
+            className="btn styled-btn save-btn"
+            disabled={isSaving}
+          >
+            {isSaving ? 'Salvataggio...' : 'Salva Partita'}
           </button>
-          <button onClick={onClose} className="btn styled-btn close-btn">
+          <button onClick={onClose} className="btn styled-btn close-btn" disabled={isSaving}>
             Chiudi
           </button>
         </div>

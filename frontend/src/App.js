@@ -7,12 +7,13 @@ import TeamDisplay from './components/TeamDisplay';
 import PlayerRadarChart from './components/PlayerRadarChart'; // Importa il componente
 
 function App() {
-  const [teams, setTeams] = useState({ teamA: null, teamB: null });
+  const [teams, setTeams] = useState({ teamA: [], teamB: [] });
   const [hoveredPlayer, setHoveredPlayer] = useState(null); // Stato per il giocatore selezionato
   const [matchHistory, setMatchHistory] = useState([]); // Stato per lo storico delle partite
 
-  const handleTeamsUpdate = (newTeams) => {
-    setTeams(newTeams);
+  const handleTeamsUpdate = (newTeamA, newTeamB) => {
+    // Aggiorna immediatamente lo stato delle squadre
+    setTeams({ teamA: newTeamA, teamB: newTeamB });
   };
 
   // Funzione per aggiungere una nuova partita allo storico
@@ -31,7 +32,7 @@ function App() {
         <div className="row">
           <div className="col-md-6">
             <PlayerList
-              onTeamsUpdate={handleTeamsUpdate}
+              onTeamsUpdate={handleTeamsUpdate} // Notifica immediatamente TeamDisplay delle nuove squadre
               setHoveredPlayer={setHoveredPlayer} // Passa la funzione per aggiornare il giocatore
             />
           </div>
