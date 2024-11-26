@@ -1,12 +1,14 @@
 const express = require('express');
 const MatchHistory = require('../models/MatchHistory');
+const authenticate = require('../middleware/authenticate');
 
 const router = express.Router();
 
 // Salva una partita
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
-    const newMatch = new MatchHistory(req.body);
+    const matchData = { ...req.body, userId: req.userId };
+    const newMatch = new MatchHistory(matchData);
     const savedMatch = await newMatch.save();
     res.status(201).json(savedMatch);
   } catch (err) {
@@ -15,9 +17,9 @@ router.post('/', async (req, res) => {
 });
 
 // Ottieni lo storico delle partite
-router.get('/', async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
-    const matches = await MatchHistory.find();
+    const matches = await MatchHistory.find({ userId: req.userId });
     res.status(200).json(matches);
   } catch (err) {
     res.status(500).json({ error: err.message });
