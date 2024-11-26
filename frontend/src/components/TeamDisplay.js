@@ -3,35 +3,37 @@ import axios from 'axios';
 import GolUpdateModal from './GolUpdateModal';
 import config from '../config';
 
-function TeamDisplay({ onAddMatch, updatedTeamA, updatedTeamB }) {
+function TeamDisplay({ onAddMatch, teamA: propTeamA, teamB: propTeamB }) {
   const [teamA, setTeamA] = useState([]);
   const [teamB, setTeamB] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
+  // Carica le squadre salvate dal backend all'inizializzazione
   useEffect(() => {
-    // Carica le squadre salvate dal backend all'inizializzazione
-    axios
-      .get(`${config.apiBaseUrl}/teams`)
-      .then((response) => {
-        console.log('Dati ricevuti:', response.data);
-        if (response.data.teams && response.data.teams.length > 0) {
-          setTeamA(response.data.teams[0]);
-          setTeamB(response.data.teams[1]);
-        } else {
-          setTeamA([]);
-          setTeamB([]);
-        }
-      })
-      .catch((err) => console.error("Errore durante il caricamento delle squadre:", err));
+    if ((!propTeamA || propTeamA.length === 0) && (!propTeamB || propTeamB.length === 0)) {
+      axios
+        .get(`${config.apiBaseUrl}/teams`)
+        .then((response) => {
+          console.log('Dati ricevuti:', response.data);
+          if (response.data.teams && response.data.teams.length > 0) {
+            setTeamA(response.data.teams[0]);
+            setTeamB(response.data.teams[1]);
+          } else {
+            setTeamA([]);
+            setTeamB([]);
+          }
+        })
+        .catch((err) => console.error("Errore durante il caricamento delle squadre:", err));
+    }
   }, []);
 
-  // Aggiorna le squadre quando vengono passate da PlayerList
+  // Aggiorna le squadre quando vengono passate tramite le props
   useEffect(() => {
-    if (updatedTeamA && updatedTeamB) {
-      setTeamA(updatedTeamA);
-      setTeamB(updatedTeamB);
+    if (propTeamA && propTeamB) {
+      setTeamA(propTeamA);
+      setTeamB(propTeamB);
     }
-  }, [updatedTeamA, updatedTeamB]);
+  }, [propTeamA, propTeamB]);
 
   const calculateTeamValue = (team) =>
     team.reduce((sum, player) => sum + player.valoreTotale + (player.gol || 0), 0);

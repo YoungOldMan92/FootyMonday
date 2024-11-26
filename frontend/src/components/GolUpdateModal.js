@@ -39,7 +39,7 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
       return;
     }
 
-    setIsSaving(true); // Start saving state
+    setIsSaving(true);
 
     const matchData = {
       teamA: updatedTeamA,
@@ -59,7 +59,6 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
 
       onAddMatch(matchData);
 
-      // Clear temporary teams in backend after saving match
       await axios.delete(`${config.apiBaseUrl}/teams`);
 
       onResetTeams();
@@ -69,47 +68,47 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
       console.error('Errore durante il salvataggio della partita:', err);
       alert('Errore durante il salvataggio della partita.');
     } finally {
-      setIsSaving(false); // End saving state
+      setIsSaving(false);
     }
   };
 
   if (!show) return null;
 
   return (
-    <div className="modal-overlay styled-overlay">
-      <div className="modal-content styled-modal">
-        <h3 className="modal-title styled-title">Aggiorna Risultati</h3>
-        <div className="modal-body styled-body">
-          <div className="teams-container styled-teams">
-            <div className="team-section styled-team team-a">
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h3 className="modal-title">Aggiorna Risultati</h3>
+        <div className="modal-body">
+          <div className="teams-container">
+            <div className="team-section team-a">
               <h4>Squadra A</h4>
               {updatedTeamA.map((player, index) => (
-                <div key={`teamA-${player.id || player.name}-${index}`} className="player-item styled-player-item">
-                  <span className="player-name styled-player-name">{player.name}</span>
+                <div key={index} className="player-item">
+                  <span className="player-name">{player.name}</span>
                   <input
                     type="number"
                     value={player.gol}
                     onChange={(e) =>
                       handleGoalChange('teamA', index, Number(e.target.value))
                     }
-                    className="goal-input styled-goal-input"
+                    className="goal-input"
                     disabled={isSaving}
                   />
                 </div>
               ))}
             </div>
-            <div className="team-section styled-team team-b">
+            <div className="team-section team-b">
               <h4>Squadra B</h4>
               {updatedTeamB.map((player, index) => (
-                <div key={`teamB-${player.id || player.name}-${index}`} className="player-item styled-player-item">
-                  <span className="player-name styled-player-name">{player.name}</span>
+                <div key={index} className="player-item">
+                  <span className="player-name">{player.name}</span>
                   <input
                     type="number"
                     value={player.gol}
                     onChange={(e) =>
                       handleGoalChange('teamB', index, Number(e.target.value))
                     }
-                    className="goal-input styled-goal-input"
+                    className="goal-input"
                     disabled={isSaving}
                   />
                 </div>
@@ -117,15 +116,15 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
             </div>
           </div>
         </div>
-        <div className="modal-footer styled-footer">
+        <div className="modal-footer">
           <button
             onClick={saveMatchToDatabase}
-            className="btn styled-btn save-btn"
+            className="save-btn"
             disabled={isSaving}
           >
             {isSaving ? 'Salvataggio...' : 'Salva Partita'}
           </button>
-          <button onClick={onClose} className="btn styled-btn close-btn" disabled={isSaving}>
+          <button onClick={onClose} className="close-btn" disabled={isSaving}>
             Chiudi
           </button>
         </div>
