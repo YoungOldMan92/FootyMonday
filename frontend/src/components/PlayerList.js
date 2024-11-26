@@ -17,7 +17,7 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
     // Fetch players from the backend
     axios
       .get(`${config.apiBaseUrl}/players`)
-      .then((response) => setPlayers(response.data))
+      .then((response) => setPlayers(response.data || [])) // Assicura un array vuoto
       .catch((err) => console.error("Errore durante il caricamento dei giocatori:", err));
 
     // Fetch existing teams from the backend
@@ -25,8 +25,8 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
       .get(`${config.apiBaseUrl}/teams`)
       .then((response) => {
         if (response.data.teams) {
-          setTeamA(response.data.teams[0]);
-          setTeamB(response.data.teams[1]);
+          setTeamA(response.data.teams[0] || []);
+          setTeamB(response.data.teams[1] || []);
         }
       })
       .catch((err) => console.error("Errore durante il caricamento delle squadre:", err));
@@ -34,7 +34,7 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
 
   const togglePlayerSelection = (name) => {
     setPlayers((prev) =>
-      prev.map((player) =>
+      (prev || []).map((player) =>
         player.name === name ? { ...player, selected: !player.selected } : player
       )
     );
@@ -45,24 +45,23 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
       axios
         .delete(`${config.apiBaseUrl}/players/${name}`)
         .then(() =>
-          setPlayers((prev) => prev.filter((player) => player.name !== name))
+          setPlayers((prev) => (prev || []).filter((player) => player.name !== name))
         )
         .catch((err) => console.error("Errore durante l'eliminazione del giocatore:", err));
     }
   };
 
   const createTeams = () => {
-    const selectedPlayers = players.filter((player) => player.selected);
-  
+    const selectedPlayers = (players || []).filter((player) => player.selected);
+
     if (selectedPlayers.length < 2 || selectedPlayers.length % 2 !== 0) {
       alert("Seleziona un numero pari di giocatori maggiore o uguale a 2 per creare le squadre!");
       return;
     }
-  
+
     const calculateTeamValue = (team) =>
       team.reduce((total, player) => total + player.valoreTotale + (player.gol || 0), 0);
-  
-    // Mescola casualmente i giocatori selezionati
+
     const shufflePlayers = (array) => {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -70,20 +69,18 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
       }
       return array;
     };
-  
-    const shuffledPlayers = shufflePlayers([...selectedPlayers]); // Copia immutabile
-  
-    // Dividi i giocatori per ruolo
+
+    const shuffledPlayers = shufflePlayers([...selectedPlayers]);
+
     const attackers = shuffledPlayers.filter((player) => player.ruolo === 'Attaccante');
     const defenders = shuffledPlayers.filter((player) => player.ruolo === 'Difensore');
     const midfielders = shuffledPlayers.filter((player) => player.ruolo === 'Centrocampista');
-  
-    // Funzione per distribuire i giocatori tra le squadre
+
     const distributePlayers = (playersByRole, teamA, teamB) => {
       playersByRole.forEach((player) => {
         const teamAValue = calculateTeamValue(teamA);
         const teamBValue = calculateTeamValue(teamB);
-  
+
         if (teamAValue <= teamBValue) {
           teamA.push(player);
         } else {
@@ -91,55 +88,44 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
         }
       });
     };
-  
+
     let newTeamA = [];
     let newTeamB = [];
-  
-    // Distribuisci i giocatori per ruolo
+
     distributePlayers(attackers, newTeamA, newTeamB);
     distributePlayers(defenders, newTeamA, newTeamB);
     distributePlayers(midfielders, newTeamA, newTeamB);
-  
-    // Controlla il delta finale e riequilibra se necessario
+
     let teamAValue = calculateTeamValue(newTeamA);
     let teamBValue = calculateTeamValue(newTeamB);
-    let iterationLimit = 50; // Limite massimo di iterazioni per prevenire loop infinito
-  
+    let iterationLimit = 50;
+
     while (Math.abs(teamAValue - teamBValue) > 10 && iterationLimit > 0) {
       const candidateToMove =
         teamAValue > teamBValue ? newTeamA.slice(-1)[0] : newTeamB.slice(-1)[0];
-  
+
       if (teamAValue > teamBValue) {
-        newTeamA = newTeamA.slice(0, -1); // Rimuove immutabilmente
+        newTeamA = newTeamA.slice(0, -1);
         newTeamB = [...newTeamB, candidateToMove];
       } else {
-        newTeamB = newTeamB.slice(0, -1); // Rimuove immutabilmente
+        newTeamB = newTeamB.slice(0, -1);
         newTeamA = [...newTeamA, candidateToMove];
       }
-  
+
       teamAValue = calculateTeamValue(newTeamA);
       teamBValue = calculateTeamValue(newTeamB);
       iterationLimit--;
     }
-  
-    if (iterationLimit === 0) {
-      console.warn("Impossibile bilanciare perfettamente le squadre.");
-    }
-  
-    // Aggiorna immediatamente il frontend
+
     if (typeof onTeamsUpdate === 'function') {
-      onTeamsUpdate(newTeamA, newTeamB); // Sovrascrive le squadre attualmente visibili
+      onTeamsUpdate(newTeamA, newTeamB);
     }
-  
-    // Salva le squadre nel backend
+
     axios
       .post(`${config.apiBaseUrl}/teams`, { teamA: newTeamA, teamB: newTeamB })
       .then(() => console.log('Squadre salvate nel backend.'))
       .catch((err) => console.error("Errore durante il salvataggio delle squadre:", err));
   };
-  
-  
-  
 
   const saveMatchResults = (teamAGoals, teamBGoals) => {
     const latestMatch = { teamA, teamB, teamAGoals, teamBGoals };
@@ -149,29 +135,36 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
   const updateRoles = async () => {
     try {
       const response = await axios.post(`${config.apiBaseUrl}/players/update-roles`);
-      alert(response.data.message);
-      setPlayers(response.data.updatedPlayers);
+      
+      if (response.data && response.data.updatedPlayers) {
+        setPlayers(response.data.updatedPlayers); // Aggiorna la lista giocatori con i dati restituiti
+        alert('Ruoli aggiornati con successo!');
+      } else {
+        console.warn('API ha restituito dati non validi:', response.data);
+        alert('Errore: Non ci sono dati aggiornati. Controlla la risposta dell\'API.');
+      }
     } catch (error) {
       console.error('Errore durante l\'aggiornamento dei ruoli:', error);
-      alert('Errore durante l\'aggiornamento dei ruoli');
+      alert('Errore durante l\'aggiornamento dei ruoli. Controlla la console per i dettagli.');
     }
   };
+  
+  
 
   const recalculateValues = async () => {
     try {
       const response = await axios.post(`${config.apiBaseUrl}/players/recalculate-values`);
       alert(response.data.message);
 
-      // Ricarica i giocatori aggiornati
       const updatedPlayers = await axios.get(`${config.apiBaseUrl}/players`);
-      setPlayers(updatedPlayers.data);
+      setPlayers(updatedPlayers.data || []);
     } catch (error) {
       console.error('Errore durante il ricalcolo dei valori:', error);
       alert('Errore durante il ricalcolo dei valori. Controlla la console per i dettagli.');
     }
   };
 
-  const filteredPlayers = players.filter((player) =>
+  const filteredPlayers = (players || []).filter((player) =>
     player.name && player.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 

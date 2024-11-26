@@ -37,6 +37,11 @@
   }
 }
 
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+
 /* Colore dei titoli */
 h2 {
   color: #0056b3; /* Blu scuro */

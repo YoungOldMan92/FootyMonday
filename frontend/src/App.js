@@ -6,27 +6,50 @@ import MatchHistory from './components/MatchHistory';
 import GoalLeaderboard from './components/GoalLeaderboard';
 import TeamDisplay from './components/TeamDisplay';
 import PlayerRadarChart from './components/PlayerRadarChart';
+import Login from './components/Login';
 import axios from 'axios';
 
 function App() {
+  const [loggedIn, setLoggedIn] = useState(false); // Stato per il login
   const [teams, setTeams] = useState({ teamA: [], teamB: [] });
   const [hoveredPlayer, setHoveredPlayer] = useState(null);
   const [matchHistory, setMatchHistory] = useState([]);
 
+  // Effettua il controllo iniziale del login
   useEffect(() => {
-    // Carica le squadre salvate dal backend al caricamento dell'app
-    axios
-      .get(`${config.apiBaseUrl}/teams`)
-      .then((response) => {
-        if (response.data.teams && response.data.teams.length > 0) {
-          setTeams({
-            teamA: response.data.teams[0],
-            teamB: response.data.teams[1],
-          });
-        }
-      })
-      .catch((err) => console.error('Errore durante il caricamento delle squadre:', err));
+    const token = localStorage.getItem('token');
+    if (token) {
+      setLoggedIn(true);
+    }
   }, []);
+
+  // Configura Axios per includere il token JWT nelle richieste
+  useEffect(() => {
+    axios.interceptors.request.use((config) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (loggedIn) {
+      // Carica le squadre salvate dal backend solo se l'utente è autenticato
+      axios
+        .get(`${config.apiBaseUrl}/teams`)
+        .then((response) => {
+          if (response.data.teams && response.data.teams.length > 0) {
+            setTeams({
+              teamA: response.data.teams[0],
+              teamB: response.data.teams[1],
+            });
+          }
+        })
+        .catch((err) => console.error('Errore durante il caricamento delle squadre:', err));
+    }
+  }, [loggedIn]);
 
   const handleTeamsUpdate = (newTeamA, newTeamB) => {
     // Aggiorna immediatamente lo stato delle squadre
@@ -37,11 +60,25 @@ function App() {
     setMatchHistory((prevHistory) => [...prevHistory, newMatch]);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Rimuove il token dal localStorage
+    setLoggedIn(false); // Reimposta lo stato di autenticazione
+    setTeams({ teamA: [], teamB: [] }); // Pulisce i dati utente
+    setMatchHistory([]); // Pulisce lo storico
+  };
+
+  if (!loggedIn) {
+    return <Login setLoggedIn={setLoggedIn} />;
+  }
+
   return (
     <div className="container">
       <header className="mb-4">
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
           <a className="navbar-brand" href="#">FootyMonday</a>
+          <button className="btn btn-outline-danger ml-auto" onClick={handleLogout}>
+            Logout
+          </button>
         </nav>
       </header>
       <main>
