@@ -53,54 +53,93 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
 
   const createTeams = () => {
     const selectedPlayers = players.filter((player) => player.selected);
+  
     if (selectedPlayers.length < 2 || selectedPlayers.length % 2 !== 0) {
       alert("Seleziona un numero pari di giocatori maggiore o uguale a 2 per creare le squadre!");
       return;
     }
-
+  
     const calculateTeamValue = (team) =>
       team.reduce((total, player) => total + player.valoreTotale + (player.gol || 0), 0);
-
-    const distributeRoles = (playersByRole) => {
-      const shuffled = [...playersByRole].sort(() => 0.5 - Math.random());
-      const half = Math.floor(shuffled.length / 2);
-      return [shuffled.slice(0, half), shuffled.slice(half)];
+  
+    // Mescola casualmente i giocatori selezionati
+    const shufflePlayers = (array) => {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
     };
-
-    const attackers = selectedPlayers.filter((p) => p.ruolo === 'Attaccante');
-    const defenders = selectedPlayers.filter((p) => p.ruolo === 'Difensore');
-    const midfielders = selectedPlayers.filter((p) => p.ruolo === 'Centrocampista');
-
-    const [teamAAttackers, teamBAttackers] = distributeRoles(attackers);
-    const [teamADefenders, teamBDefenders] = distributeRoles(defenders);
-    const [teamAMidfielders, teamBMidfielders] = distributeRoles(midfielders);
-
-    let newTeamA = [...teamAAttackers, ...teamADefenders, ...teamAMidfielders];
-    let newTeamB = [...teamBAttackers, ...teamBDefenders, ...teamBMidfielders];
-
-    while (newTeamA.length > newTeamB.length) {
-      newTeamB.push(newTeamA.pop());
+  
+    const shuffledPlayers = shufflePlayers([...selectedPlayers]); // Copia immutabile
+  
+    // Dividi i giocatori per ruolo
+    const attackers = shuffledPlayers.filter((player) => player.ruolo === 'Attaccante');
+    const defenders = shuffledPlayers.filter((player) => player.ruolo === 'Difensore');
+    const midfielders = shuffledPlayers.filter((player) => player.ruolo === 'Centrocampista');
+  
+    // Funzione per distribuire i giocatori tra le squadre
+    const distributePlayers = (playersByRole, teamA, teamB) => {
+      playersByRole.forEach((player) => {
+        const teamAValue = calculateTeamValue(teamA);
+        const teamBValue = calculateTeamValue(teamB);
+  
+        if (teamAValue <= teamBValue) {
+          teamA.push(player);
+        } else {
+          teamB.push(player);
+        }
+      });
+    };
+  
+    let newTeamA = [];
+    let newTeamB = [];
+  
+    // Distribuisci i giocatori per ruolo
+    distributePlayers(attackers, newTeamA, newTeamB);
+    distributePlayers(defenders, newTeamA, newTeamB);
+    distributePlayers(midfielders, newTeamA, newTeamB);
+  
+    // Controlla il delta finale e riequilibra se necessario
+    let teamAValue = calculateTeamValue(newTeamA);
+    let teamBValue = calculateTeamValue(newTeamB);
+    let iterationLimit = 50; // Limite massimo di iterazioni per prevenire loop infinito
+  
+    while (Math.abs(teamAValue - teamBValue) > 10 && iterationLimit > 0) {
+      const candidateToMove =
+        teamAValue > teamBValue ? newTeamA.slice(-1)[0] : newTeamB.slice(-1)[0];
+  
+      if (teamAValue > teamBValue) {
+        newTeamA = newTeamA.slice(0, -1); // Rimuove immutabilmente
+        newTeamB = [...newTeamB, candidateToMove];
+      } else {
+        newTeamB = newTeamB.slice(0, -1); // Rimuove immutabilmente
+        newTeamA = [...newTeamA, candidateToMove];
+      }
+  
+      teamAValue = calculateTeamValue(newTeamA);
+      teamBValue = calculateTeamValue(newTeamB);
+      iterationLimit--;
     }
-    while (newTeamB.length > newTeamA.length) {
-      newTeamA.push(newTeamB.pop());
+  
+    if (iterationLimit === 0) {
+      console.warn("Impossibile bilanciare perfettamente le squadre.");
     }
-
-    const teamAValue = calculateTeamValue(newTeamA);
-    const teamBValue = calculateTeamValue(newTeamB);
-
-    // Aggiorna immediatamente il componente TeamDisplay
+  
+    // Aggiorna immediatamente il frontend
     if (typeof onTeamsUpdate === 'function') {
-      onTeamsUpdate(newTeamA, newTeamB);
+      onTeamsUpdate(newTeamA, newTeamB); // Sovrascrive le squadre attualmente visibili
     }
-
+  
     // Salva le squadre nel backend
     axios
       .post(`${config.apiBaseUrl}/teams`, { teamA: newTeamA, teamB: newTeamB })
-      .then(() => {
-        console.log('Squadre salvate nel backend.');
-      })
+      .then(() => console.log('Squadre salvate nel backend.'))
       .catch((err) => console.error("Errore durante il salvataggio delle squadre:", err));
   };
+  
+  
+  
 
   const saveMatchResults = (teamAGoals, teamBGoals) => {
     const latestMatch = { teamA, teamB, teamAGoals, teamBGoals };

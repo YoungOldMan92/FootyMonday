@@ -1,22 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import config from './config';
 import PlayerList from './components/PlayerList';
 import MatchHistory from './components/MatchHistory';
 import GoalLeaderboard from './components/GoalLeaderboard';
 import TeamDisplay from './components/TeamDisplay';
-import PlayerRadarChart from './components/PlayerRadarChart'; // Importa il componente
+import PlayerRadarChart from './components/PlayerRadarChart';
+import axios from 'axios';
 
 function App() {
   const [teams, setTeams] = useState({ teamA: [], teamB: [] });
-  const [hoveredPlayer, setHoveredPlayer] = useState(null); // Stato per il giocatore selezionato
-  const [matchHistory, setMatchHistory] = useState([]); // Stato per lo storico delle partite
+  const [hoveredPlayer, setHoveredPlayer] = useState(null);
+  const [matchHistory, setMatchHistory] = useState([]);
+
+  useEffect(() => {
+    // Carica le squadre salvate dal backend al caricamento dell'app
+    axios
+      .get(`${config.apiBaseUrl}/teams`)
+      .then((response) => {
+        if (response.data.teams && response.data.teams.length > 0) {
+          setTeams({
+            teamA: response.data.teams[0],
+            teamB: response.data.teams[1],
+          });
+        }
+      })
+      .catch((err) => console.error('Errore durante il caricamento delle squadre:', err));
+  }, []);
 
   const handleTeamsUpdate = (newTeamA, newTeamB) => {
     // Aggiorna immediatamente lo stato delle squadre
     setTeams({ teamA: newTeamA, teamB: newTeamB });
   };
 
-  // Funzione per aggiungere una nuova partita allo storico
   const handleAddMatch = (newMatch) => {
     setMatchHistory((prevHistory) => [...prevHistory, newMatch]);
   };
@@ -32,25 +48,25 @@ function App() {
         <div className="row">
           <div className="col-md-6">
             <PlayerList
-              onTeamsUpdate={handleTeamsUpdate} // Notifica immediatamente TeamDisplay delle nuove squadre
-              setHoveredPlayer={setHoveredPlayer} // Passa la funzione per aggiornare il giocatore
+              onTeamsUpdate={handleTeamsUpdate}
+              setHoveredPlayer={setHoveredPlayer}
             />
           </div>
           <div className="col-md-6">
             <GoalLeaderboard />
             <br />
-            <PlayerRadarChart player={hoveredPlayer} /> {/* Aggiungi il grafico sotto */}
+            <PlayerRadarChart player={hoveredPlayer} />
           </div>
         </div>
         <div className="mt-4">
           <TeamDisplay
             teamA={teams.teamA}
             teamB={teams.teamB}
-            onAddMatch={handleAddMatch} // Passa la funzione onAddMatch a TeamDisplay
+            onAddMatch={handleAddMatch}
           />
         </div>
         <div className="mt-4">
-          <MatchHistory history={matchHistory} /> {/* Passa lo storico delle partite */}
+          <MatchHistory history={matchHistory} />
         </div>
       </main>
     </div>
