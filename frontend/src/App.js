@@ -6,8 +6,11 @@ import MatchHistory from './components/MatchHistory';
 import GoalLeaderboard from './components/GoalLeaderboard';
 import TeamDisplay from './components/TeamDisplay';
 import PlayerRadarChart from './components/PlayerRadarChart';
-import Login from './components/Login';
+import HomePage from './components/HomePage'; // Nuova home page per login e registrazione
+import Modal from 'react-modal';
 import axios from 'axios';
+
+Modal.setAppElement('#root');
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false); // Stato per il login
@@ -68,7 +71,7 @@ function App() {
   };
 
   if (!loggedIn) {
-    return <Login setLoggedIn={setLoggedIn} />;
+    return <HomePage setLoggedIn={setLoggedIn} />; // Nuova home page
   }
 
   return (
