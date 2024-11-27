@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import config from '../config';
 
 function Login({ setLoggedIn }) {
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -14,7 +15,7 @@ function Login({ setLoggedIn }) {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/login', formData);
+      const response = await axios.post(`${config.apiBaseUrl}/user/login`, formData);
       const token = response.data.token;
 
       // Salva il token nel localStorage

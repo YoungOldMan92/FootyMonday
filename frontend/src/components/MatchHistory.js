@@ -10,12 +10,18 @@ function MatchHistory() {
   useEffect(() => {
     const fetchMatches = async () => {
       try {
-        const response = await axios.get(`${config.apiBaseUrl}/matches`);
+        const token = localStorage.getItem('token'); // Recupera il token JWT
+        const response = await axios.get(`${config.apiBaseUrl}/matches`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Aggiunge il token JWT
+          },
+        });
         setHistory(response.data);
       } catch (error) {
         console.error('Errore durante il recupero delle partite:', error);
       }
     };
+    
 
     fetchMatches();
   }, []);

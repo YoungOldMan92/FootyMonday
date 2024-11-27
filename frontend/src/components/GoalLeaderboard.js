@@ -8,15 +8,21 @@ function GoalLeaderboard() {
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await axios.get(`${config.apiBaseUrl}/players`);
+        const token = localStorage.getItem('token'); // Recupera il token JWT
+        const response = await axios.get(`${config.apiBaseUrl}/players`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Aggiunge il token JWT
+          },
+        });
         const sortedPlayers = response.data
-          .sort((a, b) => b.gol - a.gol) // Ordina i giocatori per gol in ordine decrescente
-          .slice(0, 5); // Prendi solo i primi 5 giocatori
+          .sort((a, b) => b.gol - a.gol)
+          .slice(0, 5);
         setLeaderboard(sortedPlayers);
       } catch (error) {
         console.error('Errore durante il caricamento dei giocatori:', error);
       }
     };
+    
 
     fetchPlayers();
   }, []);

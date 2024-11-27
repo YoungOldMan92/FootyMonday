@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import Modal from 'react-modal';
 import '../App.css';
+import config from '../config';
 
 function HomePage({ setLoggedIn }) {
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -29,7 +30,7 @@ function HomePage({ setLoggedIn }) {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/login', formData);
+      const response = await axios.post(`${config.apiBaseUrl}/user/login`, formData);
       const token = response.data.token;
 
       // Salva il token nel localStorage

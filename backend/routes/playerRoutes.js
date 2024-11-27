@@ -8,13 +8,89 @@ const router = express.Router();
 // Crea un nuovo giocatore
 router.post('/', authenticate, async (req, res) => {
   try {
-    const playerData = { ...req.body, userId: req.userId };
+    const calculateAverage = (group) => {
+      const values = Object.values(group);
+      return values.reduce((sum, value) => sum + value, 0) / values.length;
+    };
+
+    const { capacitaTecnica, resistenzaFisica, posizionamentoTattico, capacitaDifensiva, contributoInAttacco, mentalitaEComportamento } = req.body;
+
+    // Calcola le medie per ogni gruppo
+    const playerData = {
+      ...req.body,
+      capacitaTecnica: {
+        ...capacitaTecnica,
+        media: calculateAverage(capacitaTecnica),
+      },
+      resistenzaFisica: {
+        ...resistenzaFisica,
+        media: calculateAverage(resistenzaFisica),
+      },
+      posizionamentoTattico: {
+        ...posizionamentoTattico,
+        media: calculateAverage(posizionamentoTattico),
+      },
+      capacitaDifensiva: {
+        ...capacitaDifensiva,
+        media: calculateAverage(capacitaDifensiva),
+      },
+      contributoInAttacco: {
+        ...contributoInAttacco,
+        media: calculateAverage(contributoInAttacco),
+      },
+      mentalitaEComportamento: {
+        ...mentalitaEComportamento,
+        media: calculateAverage(mentalitaEComportamento),
+      },
+    };
+
+    // Calcola il valore totale
+    playerData.valoreTotale =
+      playerData.capacitaTecnica.media +
+      playerData.resistenzaFisica.media +
+      playerData.posizionamentoTattico.media +
+      playerData.capacitaDifensiva.media +
+      playerData.contributoInAttacco.media +
+      playerData.mentalitaEComportamento.media;
+
     const newPlayer = new Player(playerData);
     const savedPlayer = await newPlayer.save();
     res.status(201).json(savedPlayer);
   } catch (err) {
-    console.error('Errore durante la creazione del giocatore:', err);
+    console.error('Errore durante la creazione del giocatore:', err.message);
     res.status(400).json({ error: err.message });
+  }
+});
+
+router.post('/update-goals', authenticate, async (req, res) => {
+  try {
+    const updates = req.body.updates; // Array di giocatori con i loro nuovi gol
+
+    if (!updates || updates.length === 0) {
+      return res.status(400).json({ error: 'Nessun aggiornamento fornito.' });
+    }
+
+    for (const update of updates) {
+      const { playerId, additionalGoals } = update;
+
+      if (!playerId || additionalGoals === undefined) {
+        return res.status(400).json({ error: 'ID giocatore o gol mancanti.' });
+      }
+
+      const player = await Player.findById(playerId);
+      if (!player) {
+        return res.status(404).json({ error: `Giocatore con ID ${playerId} non trovato.` });
+      }
+
+      // Aggiorna i gol
+      player.gol += additionalGoals;
+      await player.save();
+    }
+
+    res.status(200).json({ message: 'Gol aggiornati con successo.' });
+  } catch (err) {
+    console.error('Errore durante l\'aggiornamento dei gol:', err.message);
+    res.status(500).json({ error: 'Errore interno del server.' });
   }
 });
 

@@ -11,8 +11,14 @@ function TeamDisplay({ onAddMatch, teamA: propTeamA, teamB: propTeamB }) {
   // Carica le squadre salvate dal backend all'inizializzazione
   useEffect(() => {
     if ((!propTeamA || propTeamA.length === 0) && (!propTeamB || propTeamB.length === 0)) {
+      const token = localStorage.getItem('token'); // Recupera il token JWT
+  
       axios
-        .get(`${config.apiBaseUrl}/teams`)
+        .get(`${config.apiBaseUrl}/teams`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Aggiunge il token JWT
+          },
+        })
         .then((response) => {
           console.log('Dati ricevuti:', response.data);
           if (response.data.teams && response.data.teams.length > 0) {
@@ -47,10 +53,16 @@ function TeamDisplay({ onAddMatch, teamA: propTeamA, teamB: propTeamB }) {
   };
 
   const handleResetTeams = () => {
+    const token = localStorage.getItem('token'); // Recupera il token JWT
+  
     setTeamA([]);
     setTeamB([]);
     axios
-      .delete(`${config.apiBaseUrl}/teams`)
+      .delete(`${config.apiBaseUrl}/teams`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Aggiunge il token JWT
+        },
+      })
       .then(() => console.log("Squadre resettate."))
       .catch((err) => console.error("Errore durante il reset delle squadre:", err));
   };
