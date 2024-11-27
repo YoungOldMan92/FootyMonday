@@ -38,39 +38,68 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
       alert('Errore interno. Controlla la configurazione.');
       return;
     }
-
+  
     setIsSaving(true);
-
+  
+    const token = localStorage.getItem('token'); // Recupera il token JWT
+  
     const matchData = {
       teamA: updatedTeamA,
       teamB: updatedTeamB,
       date: new Date().toISOString(),
     };
-
+  
     try {
+      // Prepara gli aggiornamenti dei gol
       const updates = [...updatedTeamA, ...updatedTeamB].map((player) => ({
-        name: player.name,
+        playerId: player._id, // Assicurati che ogni giocatore abbia questo campo
         additionalGoals: player.gol,
       }));
-
-      await axios.post(`${config.apiBaseUrl}/players/update-goals`, { updates });
-
-      await axios.post(`${config.apiBaseUrl}/matches`, matchData);
-
+  
+      // Aggiorna i gol dei giocatori
+      await axios.post(
+        `${config.apiBaseUrl}/players/update-goals`,
+        { updates },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // Salva la partita
+      await axios.post(
+        `${config.apiBaseUrl}/matches`,
+        matchData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+  
       onAddMatch(matchData);
+  
+      // Resetta le squadre nel database
+      await axios.delete(`${config.apiBaseUrl}/teams`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      await axios.delete(`${config.apiBaseUrl}/teams`);
-
+  
       onResetTeams();
       alert('Partita salvata con successo!');
       onClose();
     } catch (err) {
-      console.error('Errore durante il salvataggio della partita:', err);
-      alert('Errore durante il salvataggio della partita.');
+      console.error('Errore durante il salvataggio della partita:', err.message);
+      alert(`Errore durante il salvataggio della partita: ${err.message}`);
     } finally {
       setIsSaving(false);
     }
   };
+  
+  
 
   if (!show) return null;
 

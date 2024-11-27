@@ -36,4 +36,4 @@ app.listen(PORT, () => {
 app.use('/api/players', playerRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/teams', teamRoutes);
-app.use('/api', userRoutes);
+app.use('/api/user', userRoutes);

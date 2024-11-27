@@ -1,25 +1,40 @@
 import React from 'react';
+import config from '../config';
 
 function AddPlayerModal({ show, onClose, setPlayers }) {
   const addPlayer = async (playerData) => {
-  try {
-    const response = await fetch('http://localhost:5000/api/players', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(playerData),
-    });
+    try {
+      const token = localStorage.getItem('token'); // Recupera il token JWT
+  
+      // Decodifica il token per ottenere l'userId
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const decodedToken = JSON.parse(window.atob(base64));
+      const userId = decodedToken.userId; // Assumendo che il token abbia un campo 'id'
+  
 
-    if (!response.ok) {
-      throw new Error(`Errore HTTP: ${response.status}`);
+      // Aggiungi l'userId ai dati del giocatore
+      playerData.userId = userId;
+      const response = await fetch(`${config.apiBaseUrl}/players`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Aggiunge il token JWT
+        },
+        body: JSON.stringify(playerData),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Errore HTTP: ${response.status}`);
+      }
+  
+      const savedPlayer = await response.json();
+      setPlayers((prevPlayers) => [...prevPlayers, savedPlayer]);
+    } catch (error) {
+      console.error('Errore durante la creazione del giocatore:', error.message);
+      alert('Errore durante il salvataggio del giocatore.');
     }
-
-    const savedPlayer = await response.json();
-    setPlayers((prevPlayers) => [...prevPlayers, savedPlayer]);
-  } catch (error) {
-    console.error('Errore durante la creazione del giocatore:', error.message);
-    alert('Errore durante il salvataggio del giocatore.');
-  }
-};
+  };
 
   const parsePlayerData = (data) => ({
     name: data.nome || 'Sconosciuto',
@@ -61,7 +76,6 @@ function AddPlayerModal({ show, onClose, setPlayers }) {
     const formData = new FormData(e.target);
     const playerData = parsePlayerData(Object.fromEntries(formData.entries()));
 
-    console.log('Dati inviati al backend:', playerData); // Debug dei dati inviati
     addPlayer(playerData); // Invio al backend
     e.target.reset();
     onClose();

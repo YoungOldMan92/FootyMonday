@@ -17,7 +17,7 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/register', formData);
+      const response = await axios.post(`${config.apiBaseUrl}/api/user/register`, formData);
       alert(response.data.message);
     } catch (err) {
       alert(err.response.data.error || 'Errore durante la registrazione.');

@@ -1,18 +1,27 @@
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const authenticate = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ error: 'Accesso negato. Token non fornito.' });
+  const authHeader = req.headers.authorization;
+  console.log('Richiesta ricevuta nel middleware:', req.headers);
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log('Richiesta senza token o token malformato.');
+    return res.status(401).json({ error: 'Accesso negato. Token non valido.' });
   }
 
+  const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, 'secretKey'); // Usa il tuo secret
-    req.userId = decoded.userId; // Aggiunge l'ID utente alla richiesta
-    next(); // Procedi al prossimo middleware o controller
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretKey');
+    console.log('Middleware: Token decodificato con successo:', decoded);
+    req.userId = decoded.userId;
+    console.log('userId nel middleware:', req.userId);
+    next();
   } catch (err) {
-    res.status(401).json({ error: 'Token non valido.' });
+    console.error('Errore durante la verifica del token:', err.message);
+    return res.status(401).json({ error: 'Token non valido.' });
   }
 };
+
 
 module.exports = authenticate;
