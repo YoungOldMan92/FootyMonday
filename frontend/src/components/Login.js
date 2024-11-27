@@ -6,6 +6,26 @@ function Login({ setLoggedIn }) {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
 
+  const validateForm = () => {
+    let isValid = true;
+
+    if (!formData.username.trim()) {
+      setError('Il campo username è obbligatorio.');
+      isValid = false;
+    } else if (formData.username.length < 3) {
+      setError('L’username deve contenere almeno 3 caratteri.');
+      isValid = false;
+    } else if (!formData.password.trim()) {
+      setError('Il campo password è obbligatorio.');
+      isValid = false;
+    } else if (formData.password.length < 8) {
+      setError('La password deve contenere almeno 8 caratteri.');
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -13,6 +33,10 @@ function Login({ setLoggedIn }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!validateForm()) {
+      return;
+    }
 
     try {
       const response = await axios.post(`${config.apiBaseUrl}/user/login`, formData);

@@ -52,7 +52,7 @@ function HomePage({ setLoggedIn }) {
     setRegisterSuccess('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/register', registerData);
+      const response = await axios.post(`${config.apiBaseUrl}/user/register`, registerData);
       setRegisterSuccess('Registrazione completata! Ora puoi accedere.');
       setRegisterData({ username: '', email: '', nome: '', cognome: '', password: '' });
       setIsModalOpen(false);
