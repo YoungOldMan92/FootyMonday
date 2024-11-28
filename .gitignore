@@ -1,0 +1,17 @@
+# Escludi file di configurazione e chiavi segrete
+backend/.env
+backend/*.env
+config/*.json
+backend/updatePlayers.js
+
+# Escludi i file di output e build
+backend/node_modules
+frontend/node_modules
+build/
+dist/
+
+# Escludi file sensibili o temporanei
+*.log
+.DS_Store
+.idea/
+.vscode/
