@@ -132,13 +132,13 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
     setMatchHistory((prevHistory) => [...prevHistory, latestMatch]);
   };
 
-  const updateRoles = async () => {
+  const updatePlayers = async () => {
     try {
-      const response = await axios.post(`${config.apiBaseUrl}/players/update-roles`);
+      const response = await axios.post(`${config.apiBaseUrl}/players/update-player`);
       
       if (response.data && response.data.updatedPlayers) {
         setPlayers(response.data.updatedPlayers); // Aggiorna la lista giocatori con i dati restituiti
-        alert('Ruoli aggiornati con successo!');
+        alert('Giocatori aggiornati con successo!');
       } else {
         console.warn('API ha restituito dati non validi:', response.data);
         alert('Errore: Non ci sono dati aggiornati. Controlla la risposta dell\'API.');
@@ -146,21 +146,6 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
     } catch (error) {
       console.error('Errore durante l\'aggiornamento dei ruoli:', error);
       alert('Errore durante l\'aggiornamento dei ruoli. Controlla la console per i dettagli.');
-    }
-  };
-  
-  
-
-  const recalculateValues = async () => {
-    try {
-      const response = await axios.post(`${config.apiBaseUrl}/players/recalculate-values`);
-      alert(response.data.message);
-
-      const updatedPlayers = await axios.get(`${config.apiBaseUrl}/players`);
-      setPlayers(updatedPlayers.data || []);
-    } catch (error) {
-      console.error('Errore durante il ricalcolo dei valori:', error);
-      alert('Errore durante il ricalcolo dei valori. Controlla la console per i dettagli.');
     }
   };
 
@@ -188,34 +173,16 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
         />
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
-            onClick={() => setSortCriteria('attack')}
-            className="btn btn-outline-primary btn-sm"
-          >
-            Ordina per Attacco
-          </button>
-          <button
-            onClick={() => setSortCriteria('defense')}
-            className="btn btn-outline-secondary btn-sm"
-          >
-            Ordina per Difesa
-          </button>
-          <button
             onClick={createTeams}
             className="btn btn-outline-success btn-sm"
           >
             Crea Squadre
           </button>
           <button
-            onClick={updateRoles}
+            onClick={updatePlayers}
             className="btn btn-outline-info btn-sm"
           >
-            Aggiorna Ruoli
-          </button>
-          <button
-            onClick={recalculateValues}
-            className="btn btn-outline-warning btn-sm"
-          >
-            Ricalcola Valori
+            Aggiorna Giocatori
           </button>
           <button
             onClick={() => setShowAddPlayerModal(true)}

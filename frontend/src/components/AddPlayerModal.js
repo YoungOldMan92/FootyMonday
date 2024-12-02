@@ -73,13 +73,22 @@ function AddPlayerModal({ show, onClose, setPlayers }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const formData = new FormData(e.target);
     const playerData = parsePlayerData(Object.fromEntries(formData.entries()));
+
+    // Validazione manuale del nome
+    const nome = playerData.name;
+    const nomePattern = /^[A-Za-z0-9]{1,10}$/;
+    if (!nomePattern.test(nome)) {
+        alert('Il nome può contenere solo lettere e numeri, massimo 10 caratteri.');
+        return;
+    }
 
     addPlayer(playerData); // Invio al backend
     e.target.reset();
     onClose();
-  };
+};
 
   if (!show) return null;
 
@@ -113,7 +122,7 @@ function AddPlayerModal({ show, onClose, setPlayers }) {
             marginBottom: '15px',
           }}
         >
-          <input type="text" name="nome" placeholder="Nome" required />
+          <input type="text" name="nome" placeholder="Nome" required  maxLength="10" pattern="[A-Za-z0-9]+" title="Il nome può contenere solo lettere e numeri, massimo 10 caratteri" />
           <input type="number" name="controlloPalla" placeholder="Controllo Palla" required min="1" max="10" />
           <input type="number" name="dribbling" placeholder="Dribbling" required min="1" max="10" />
           <input type="number" name="precisionePassaggi" placeholder="Precisione Passaggi" required min="1" max="10" />

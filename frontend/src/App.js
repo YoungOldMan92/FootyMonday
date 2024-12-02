@@ -72,45 +72,45 @@ function App() {
 
   if (!loggedIn) {
     return <HomePage setLoggedIn={setLoggedIn} />; // Nuova home page
-  }
-
-  return (
-    <div className="container">
-      <header className="mb-4">
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
-          <a className="navbar-brand" href="#">FootyMonday</a>
-          <button className="btn btn-outline-danger ml-auto" onClick={handleLogout}>
-            Logout
-          </button>
-        </nav>
-      </header>
-      <main>
-        <div className="row">
-          <div className="col-md-6">
-            <PlayerList
-              onTeamsUpdate={handleTeamsUpdate}
-              setHoveredPlayer={setHoveredPlayer}
+  }else{
+    return (
+      <div className="container">
+        <header className="mb-4">
+          <nav className="navbar navbar-expand-lg navbar-light bg-light">
+            <a className="navbar-brand" href="#">FootyMonday</a>
+            <button className="btn btn-outline-danger ml-auto" onClick={handleLogout}>
+              Logout
+            </button>
+          </nav>
+        </header>
+        <main>
+          <div className="row">
+            <div className="col-md-6">
+              <PlayerList
+                onTeamsUpdate={handleTeamsUpdate}
+                setHoveredPlayer={setHoveredPlayer}
+              />
+            </div>
+            <div className="col-md-6">
+              <GoalLeaderboard />
+              <br />
+              <PlayerRadarChart player={hoveredPlayer} />
+            </div>
+          </div>
+          <div className="mt-4">
+            <TeamDisplay
+              teamA={teams.teamA}
+              teamB={teams.teamB}
+              onAddMatch={handleAddMatch}
             />
           </div>
-          <div className="col-md-6">
-            <GoalLeaderboard />
-            <br />
-            <PlayerRadarChart player={hoveredPlayer} />
+          <div className="mt-4">
+            <MatchHistory history={matchHistory} />
           </div>
-        </div>
-        <div className="mt-4">
-          <TeamDisplay
-            teamA={teams.teamA}
-            teamB={teams.teamB}
-            onAddMatch={handleAddMatch}
-          />
-        </div>
-        <div className="mt-4">
-          <MatchHistory history={matchHistory} />
-        </div>
-      </main>
-    </div>
-  );
+        </main>
+      </div>
+    );
+  }
 }
 
 export default App;
