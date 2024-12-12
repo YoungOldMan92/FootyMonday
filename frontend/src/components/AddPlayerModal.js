@@ -1,17 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import config from '../config';
 
 function AddPlayerModal({ show, onClose, setPlayers }) {
+  const [guestName, setGuestName] = useState('');
+  const [guestRole, setGuestRole] = useState('Attaccante'); // Ruolo predefinito
+
   const addPlayer = async (playerData) => {
     try {
       const token = localStorage.getItem('token'); // Recupera il token JWT
-  
+
       // Decodifica il token per ottenere l'userId
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const decodedToken = JSON.parse(window.atob(base64));
       const userId = decodedToken.userId; // Assumendo che il token abbia un campo 'id'
-  
 
       // Aggiungi l'userId ai dati del giocatore
       playerData.userId = userId;
@@ -23,11 +25,11 @@ function AddPlayerModal({ show, onClose, setPlayers }) {
         },
         body: JSON.stringify(playerData),
       });
-  
+
       if (!response.ok) {
         throw new Error(`Errore HTTP: ${response.status}`);
       }
-  
+
       const savedPlayer = await response.json();
       setPlayers((prevPlayers) => [...prevPlayers, savedPlayer]);
     } catch (error) {
@@ -71,24 +73,37 @@ function AddPlayerModal({ show, onClose, setPlayers }) {
     },
   });
 
+  const handleGenerateGuest = () => {
+    if (!guestName.trim()) {
+      alert('Inserisci un nome per il giocatore ospite.');
+      return;
+    }
+
+    const guestPlayerData = {
+      name: guestName.trim() + " - Guest",
+      capacitaTecnica: { controlloPalla: 5, dribbling: 5, precisionePassaggi: 5, tiro: 5 },
+      resistenzaFisica: { stamina: 5, velocita: 5, resistenzaSforzo: 5 },
+      posizionamentoTattico: { anticipazione: 5, copertura: 5, adattabilitaTattica: 5 },
+      capacitaDifensiva: { contrasto: 5, intercettazioni: 5, coperturaSpazi: 5 },
+      contributoInAttacco: { creativita: 5, movimentoSenzaPalla: 5, finalizzazione: 5 },
+      mentalitaEComportamento: { leadership: 5, gestioneStress: 5, sportivita: 5 },
+      ruolo: guestRole,
+    };
+
+    addPlayer(guestPlayerData);
+    setGuestName('');
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const formData = new FormData(e.target);
     const playerData = parsePlayerData(Object.fromEntries(formData.entries()));
 
-    // Validazione manuale del nome
-    const nome = playerData.name;
-    const nomePattern = /^[A-Za-z0-9]{1,10}$/;
-    if (!nomePattern.test(nome)) {
-        alert('Il nome può contenere solo lettere e numeri, massimo 10 caratteri.');
-        return;
-    }
-
     addPlayer(playerData); // Invio al backend
     e.target.reset();
     onClose();
-};
+  };
 
   if (!show) return null;
 
@@ -146,6 +161,32 @@ function AddPlayerModal({ show, onClose, setPlayers }) {
         <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '15px' }}>
           Aggiungi
         </button>
+        <div className="mt-3">
+          <input
+            type="text"
+            placeholder="Nome Giocatore Ospite"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+            className="form-control"
+          />
+          <select
+            value={guestRole}
+            onChange={(e) => setGuestRole(e.target.value)}
+            className="form-control mt-2"
+          >
+            <option value="Attaccante">Attaccante</option>
+            <option value="Centrocampista">Centrocampista</option>
+            <option value="Difensore">Difensore</option>
+          </select>
+          <button
+            type="button"
+            className="btn btn-secondary mt-2"
+            style={{ width: '100%' }}
+            onClick={handleGenerateGuest}
+          >
+            Genera Giocatore Ospite
+          </button>
+        </div>
       </form>
     </div>
   );

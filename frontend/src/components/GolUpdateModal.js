@@ -56,16 +56,17 @@ function GolUpdateModal({ show, onClose, teamA, teamB, onResetTeams, onAddMatch 
         additionalGoals: player.gol,
       }));
   
-      // Aggiorna i gol dei giocatori
-      await axios.post(
-        `${config.apiBaseUrl}/players/update-goals`,
-        { updates },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      try {
+        const response = await axios.post(`${config.apiBaseUrl}/players/update-goals`, {
+          updates,
+        }, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log('Risposta:', response.data);
+      } catch (error) {
+        console.error('Errore:', error.response ? error.response.data : error.message);
+      }
+
       // Salva la partita
       await axios.post(
         `${config.apiBaseUrl}/matches`,

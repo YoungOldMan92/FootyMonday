@@ -56,6 +56,16 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.get('/verify', authenticate, (req, res) => {
+  try {
+      // Se il middleware è passato, il token è valido
+      res.status(200).json({ message: 'Token valido' });
+  } catch (err) {
+      console.error('Errore durante la verifica del token:', err);
+      res.status(401).json({ error: 'Token non valido o scaduto' });
+  }
+});
+
 
 
 module.exports = router;

@@ -22,7 +22,20 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setLoggedIn(true);
+      // Verify token validity with backend
+      axios.get(`${config.apiBaseUrl}/user/verify`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(() => {
+        setLoggedIn(true);
+      })
+      .catch(() => {
+        // Token is invalid or expired
+        localStorage.removeItem('token');
+        setLoggedIn(false);
+      });
+    } else {
+      setLoggedIn(false);
     }
   }, []);
 

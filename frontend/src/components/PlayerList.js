@@ -134,7 +134,7 @@ function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
 
   const updatePlayers = async () => {
     try {
-      const response = await axios.post(`${config.apiBaseUrl}/players/update-player`);
+      const response = await axios.post(`${config.apiBaseUrl}/players/update-players`);
       
       if (response.data && response.data.updatedPlayers) {
         setPlayers(response.data.updatedPlayers); // Aggiorna la lista giocatori con i dati restituiti
