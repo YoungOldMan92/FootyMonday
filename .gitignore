@@ -3,8 +3,11 @@ backend/.env
 backend/*.env
 config/*.json
 backend/updatePlayers.js
+<<<<<<< HEAD
 updatePlayers.js
 
+=======
+>>>>>>> f78ac1c92fed7ff391255cb8708050f8b3db3592
 
 # Escludi i file di output e build
 backend/node_modules

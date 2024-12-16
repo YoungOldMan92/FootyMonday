@@ -37,6 +37,7 @@ const PlayerSchema = new mongoose.Schema({
   ruolo: { type: String, default: 'Non assegnato' },
   valoreTotale: { type: Number, required: true },
   gol: { type: Number, default: 0 },
+  isGuest: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('Player', PlayerSchema);

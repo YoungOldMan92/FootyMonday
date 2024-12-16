@@ -127,13 +127,8 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 router.post('/update-goals', authenticate, async (req, res) => {
-
-    console.log('Richiesta ricevuta su /update-goals');
-
   try {
     const updates = req.body.updates; // Array di giocatori con i loro nuovi gol
-
-    
 
     if (!updates || updates.length === 0) {
       return res.status(400).json({ error: 'Nessun aggiornamento fornito.' });
@@ -154,8 +149,9 @@ router.post('/update-goals', authenticate, async (req, res) => {
       // Aggiorna i gol
       player.gol += additionalGoals;
       await player.save();
-      console.log('Giocatore aggiornato', player.name);
     }
+
+    const deletedGuests = await Player.deleteMany({ isGuest: true });
 
     res.status(200).json({ message: 'Gol aggiornati con successo.' });
   } catch (err) {

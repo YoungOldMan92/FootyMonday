@@ -88,6 +88,7 @@ function AddPlayerModal({ show, onClose, setPlayers }) {
       contributoInAttacco: { creativita: 5, movimentoSenzaPalla: 5, finalizzazione: 5 },
       mentalitaEComportamento: { leadership: 5, gestioneStress: 5, sportivita: 5 },
       ruolo: guestRole,
+      isGuest: true,
     };
 
     addPlayer(guestPlayerData);
