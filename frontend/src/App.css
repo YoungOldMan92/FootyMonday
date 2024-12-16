@@ -47,6 +47,41 @@ h2 {
   color: #0056b3; /* Blu scuro */
 }
 
+/* Stile generale per la scrollbar */
+::-webkit-scrollbar {
+  width: 8px; /* Larghezza della barra verticale */
+  height: 8px; /* Altezza della barra orizzontale */
+}
+
+/* Colore della traccia (sfondo della scrollbar) */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Colore della traccia */
+  border-radius: 10px; /* Arrotondamento degli angoli */
+}
+
+/* Colore del thumb (la barra scorrevole) */
+::-webkit-scrollbar-thumb {
+  background: #888; /* Colore del thumb */
+  border-radius: 10px; /* Arrotondamento del thumb */
+}
+
+/* Thumb quando il mouse è sopra */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Colore del thumb al passaggio del mouse */
+}
+
+/* Rimozione delle frecce ai bordi (solo per browser con frecce visibili) */
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Compatibilità per Firefox */
+.scroll-container {
+  scrollbar-width: thin; /* Barre sottili */
+  scrollbar-color: #888 #f1f1f1; /* Colore thumb e traccia */
+}
+
+
 /* Migliora lo stile dei pulsanti */
 .btn-primary {
   background-color: #007bff; /* Blu Bootstrap */
@@ -121,25 +156,102 @@ h2 {
   color: #6c757d; /* Colore grigio */
 }
 
+.p-card-selected {
+  border: 2px solid #007ad9;
+  background-color: #f0f9ff;
+  cursor: pointer;
+}
 
+.p-grid {
+  gap: 10px; /* Spaziatura tra le card */
+  justify-content: center;
+}
+
+.p-col-12, .p-col-6, .p-col-4 {
+  padding: 0.5rem;
+}
+
+/* Contenitore delle schede */
+.player-list-container {
+  padding: 10px; /* Spazio interno al contenitore */
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Griglia a 4 colonne */
+  gap: 15px; /* Spazio tra le schede */
+  background-color: #f9f9f9; /* Colore di sfondo leggero */
+  border-radius: 10px; /* Arrotonda i bordi del contenitore */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Leggero effetto di profondità */
+}
 
 /* Animazione solo per le card dei giocatori */
 .player-card {
-  border: 1px solid #ddd;
+  cursor: pointer;
+  padding: 15px;
+  font-size: 14px;
+  border: 1px solid #ccc;
   border-radius: 8px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 120px; /* Altezza uniforme */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.player-card .delete-button {
+  position: absolute; /* Pulsante in alto a destra */
+  top: 5px;
+  right: 5px;
+  z-index: 1;
 }
 
 .player-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  transform: rotate(2deg);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-color: blue;
 }
 
 /* Evidenziazione dei giocatori selezionati */
 .player-card.selected {
-  background-color: rgba(40, 167, 69, 0.1); /* Verde chiaro */
-  border: 2px solid #28a745; /* Bordo verde */
+  border: 2px solid blue;
+  background-color: #e8f5ff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.player-card-header {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 5px;
+}
+
+.player-card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.player-role {
+  margin: 0;
+  font-size: 14px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.player-value {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.player-card.p-card-selected {
+  border: 2px solid #007ad9;
+  background-color: #f0f9ff;
 }
 
 
@@ -162,8 +274,11 @@ h2 {
   transform: scale(1.1); /* Leggera animazione */
 }
 
-
-
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
 /* Migliora il layout della griglia */
 .container {

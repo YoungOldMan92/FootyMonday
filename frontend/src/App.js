@@ -7,6 +7,9 @@ import GoalLeaderboard from './components/GoalLeaderboard';
 import TeamDisplay from './components/TeamDisplay';
 import PlayerRadarChart from './components/PlayerRadarChart';
 import HomePage from './components/HomePage'; // Nuova home page per login e registrazione
+import 'primereact/resources/themes/lara-light-blue/theme.css'; // Tema PrimeReact (puoi scegliere un altro tema)
+import 'primereact/resources/primereact.min.css';              // Stili base di PrimeReact
+import 'primeicons/primeicons.css';                            // Icone PrimeReact
 import Modal from 'react-modal';
 import axios from 'axios';
 

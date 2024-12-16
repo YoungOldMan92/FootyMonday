@@ -1,231 +1,167 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../config';
+import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
 import AddPlayerModal from './AddPlayerModal';
-import MatchHistory from './MatchHistory';
+import PlayerRadarChart from './PlayerRadarChart';
 
-function PlayerList({ onTeamsUpdate, setHoveredPlayer }) {
+function PlayerList({ onTeamsUpdate }) {
   const [players, setPlayers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortCriteria, setSortCriteria] = useState(null);
+  const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
-  const [matchHistory, setMatchHistory] = useState([]);
-  const [teamA, setTeamA] = useState([]);
-  const [teamB, setTeamB] = useState([]);
+  const [selectedPlayers, setSelectedPlayers] = useState([]);
+  const [hoveredPlayer, setHoveredPlayer] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(''); // Stato per la ricerca
 
   useEffect(() => {
-    // Fetch players from the backend
     axios
       .get(`${config.apiBaseUrl}/players`)
-      .then((response) => setPlayers(response.data || [])) // Assicura un array vuoto
-      .catch((err) => console.error("Errore durante il caricamento dei giocatori:", err));
-
-    // Fetch existing teams from the backend
-    axios
-      .get(`${config.apiBaseUrl}/teams`)
       .then((response) => {
-        if (response.data.teams) {
-          setTeamA(response.data.teams[0] || []);
-          setTeamB(response.data.teams[1] || []);
-        }
+        setPlayers(response.data || []);
       })
-      .catch((err) => console.error("Errore durante il caricamento delle squadre:", err));
+      .catch((err) => console.error('Errore durante il caricamento dei giocatori:', err));
   }, []);
 
-  const togglePlayerSelection = (name) => {
-    setPlayers((prev) =>
-      (prev || []).map((player) =>
-        player.name === name ? { ...player, selected: !player.selected } : player
-      )
+  const togglePlayerSelection = (player) => {
+    setSelectedPlayers((prev) =>
+      prev.includes(player)
+        ? prev.filter((p) => p !== player)
+        : [...prev, player]
     );
   };
 
-  const deletePlayer = (name) => {
-    if (window.confirm("Sei sicuro di voler eliminare questo giocatore?")) {
-      axios
-        .delete(`${config.apiBaseUrl}/players/${name}`)
-        .then(() =>
-          setPlayers((prev) => (prev || []).filter((player) => player.name !== name))
-        )
-        .catch((err) => console.error("Errore durante l'eliminazione del giocatore:", err));
-    }
-  };
-
   const createTeams = () => {
-    const selectedPlayers = (players || []).filter((player) => player.selected);
-
     if (selectedPlayers.length < 2 || selectedPlayers.length % 2 !== 0) {
-      alert("Seleziona un numero pari di giocatori maggiore o uguale a 2 per creare le squadre!");
+      alert('Seleziona un numero pari di giocatori maggiore o uguale a 2!');
       return;
     }
 
-    const calculateTeamValue = (team) =>
-      team.reduce((total, player) => total + player.valoreTotale + (player.gol || 0), 0);
+    const shuffledPlayers = [...selectedPlayers].sort(() => Math.random() - 0.5);
+    const half = Math.floor(shuffledPlayers.length / 2);
 
-    const shufflePlayers = (array) => {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    };
+    const teamA = shuffledPlayers.slice(0, half);
+    const teamB = shuffledPlayers.slice(half);
 
-    const shuffledPlayers = shufflePlayers([...selectedPlayers]);
-
-    const attackers = shuffledPlayers.filter((player) => player.ruolo === 'Attaccante');
-    const defenders = shuffledPlayers.filter((player) => player.ruolo === 'Difensore');
-    const midfielders = shuffledPlayers.filter((player) => player.ruolo === 'Centrocampista');
-
-    const distributePlayers = (playersByRole, teamA, teamB) => {
-      playersByRole.forEach((player) => {
-        const teamAValue = calculateTeamValue(teamA);
-        const teamBValue = calculateTeamValue(teamB);
-
-        if (teamAValue <= teamBValue) {
-          teamA.push(player);
-        } else {
-          teamB.push(player);
-        }
-      });
-    };
-
-    let newTeamA = [];
-    let newTeamB = [];
-
-    distributePlayers(attackers, newTeamA, newTeamB);
-    distributePlayers(defenders, newTeamA, newTeamB);
-    distributePlayers(midfielders, newTeamA, newTeamB);
-
-    let teamAValue = calculateTeamValue(newTeamA);
-    let teamBValue = calculateTeamValue(newTeamB);
-    let iterationLimit = 50;
-
-    while (Math.abs(teamAValue - teamBValue) > 10 && iterationLimit > 0) {
-      const candidateToMove =
-        teamAValue > teamBValue ? newTeamA.slice(-1)[0] : newTeamB.slice(-1)[0];
-
-      if (teamAValue > teamBValue) {
-        newTeamA = newTeamA.slice(0, -1);
-        newTeamB = [...newTeamB, candidateToMove];
-      } else {
-        newTeamB = newTeamB.slice(0, -1);
-        newTeamA = [...newTeamA, candidateToMove];
-      }
-
-      teamAValue = calculateTeamValue(newTeamA);
-      teamBValue = calculateTeamValue(newTeamB);
-      iterationLimit--;
+    if (teamA.length === 0 || teamB.length === 0) {
+      alert('Errore: una delle squadre è vuota!');
+      return;
     }
 
-    if (typeof onTeamsUpdate === 'function') {
-      onTeamsUpdate(newTeamA, newTeamB);
-    }
-
-    axios
-      .post(`${config.apiBaseUrl}/teams`, { teamA: newTeamA, teamB: newTeamB })
-      .then(() => console.log('Squadre salvate nel backend.'))
-      .catch((err) => console.error("Errore durante il salvataggio delle squadre:", err));
+    onTeamsUpdate(teamA, teamB);
+    setShowPlayerModal(false);
   };
 
-  const saveMatchResults = (teamAGoals, teamBGoals) => {
-    const latestMatch = { teamA, teamB, teamAGoals, teamBGoals };
-    setMatchHistory((prevHistory) => [...prevHistory, latestMatch]);
-  };
-
-  const updatePlayers = async () => {
-    try {
-      const response = await axios.post(`${config.apiBaseUrl}/players/update-players`);
-      
-      if (response.data && response.data.updatedPlayers) {
-        setPlayers(response.data.updatedPlayers); // Aggiorna la lista giocatori con i dati restituiti
-        alert('Giocatori aggiornati con successo!');
-      } else {
-        console.warn('API ha restituito dati non validi:', response.data);
-        alert('Errore: Non ci sono dati aggiornati. Controlla la risposta dell\'API.');
-      }
-    } catch (error) {
-      console.error('Errore durante l\'aggiornamento dei ruoli:', error);
-      alert('Errore durante l\'aggiornamento dei ruoli. Controlla la console per i dettagli.');
-    }
-  };
-
-  const filteredPlayers = (players || []).filter((player) =>
-    player.name && player.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // Funzione per filtrare i giocatori
+  const filteredPlayers = players.filter((player) =>
+    player.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (player.ruolo &&
+      player.ruolo.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const sortedPlayers = [...filteredPlayers].sort((a, b) => {
-    if (!sortCriteria) return 0;
-    return b[sortCriteria] - a[sortCriteria];
-  });
-
   return (
-    <div className="card">
-      <div className="card-header">
-        <h2>Lista Giocatori</h2>
-      </div>
-      <div className="card-body">
-        <input
-          type="text"
-          placeholder="Cerca giocatore..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="form-control mb-3"
+    <div>
+      <h2>Gestione Squadre</h2>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <Button
+          label="Crea Squadre"
+          icon="pi pi-users"
+          onClick={() => setShowPlayerModal(true)}
         />
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button
-            onClick={createTeams}
-            className="btn btn-outline-success btn-sm"
-          >
-            Crea Squadre
-          </button>
-          <button
-            onClick={updatePlayers}
-            className="btn btn-outline-info btn-sm"
-          >
-            Aggiorna Giocatori
-          </button>
-          <button
-            onClick={() => setShowAddPlayerModal(true)}
-            className="btn btn-outline-primary btn-sm"
-          >
-            Aggiungi Giocatore
-          </button>
-        </div>
+        <Button
+          label="Aggiungi Giocatore"
+          icon="pi pi-plus"
+          onClick={() => setShowAddPlayerModal(true)}
+        />
       </div>
-      <div className="row">
-        {sortedPlayers.map((player) => (
-          <div
-            key={player.name}
-            className={`col-md-4 mb-3 ${player.selected ? 'selected' : ''}`}
-            onClick={() => togglePlayerSelection(player.name)}
-            onMouseEnter={() => setHoveredPlayer(player)}
-            onMouseLeave={() => setHoveredPlayer(null)}
-            style={{ cursor: 'pointer', position: 'relative' }}
-          >
-            <div className={`card h-100 player-card ${player.selected ? 'selected' : ''}`}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deletePlayer(player.name);
+
+      {/* Modale per la selezione dei giocatori */}
+      <Dialog
+        header={
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h4>Seleziona Giocatori</h4>
+            <Button
+              label="Conferma e Crea Squadre"
+              icon="pi pi-check"
+              className="p-button-primary"
+              onClick={createTeams}
+            />
+          </div>
+        }
+        visible={showPlayerModal}
+        style={{ width: '80vw' }}
+        onHide={() => setShowPlayerModal(false)}
+      >
+        <div style={{ display: 'flex', gap: '20px', padding: '10px' }}>
+          {/* Lista Giocatori */}
+          <div style={{ flex: 2, overflowY: 'auto', maxHeight: '500px', padding: '10px' }}>
+            {/* Campo di Ricerca */}
+            <div style={{ marginBottom: '15px' }}>
+              <input
+                type="text"
+                placeholder="Cerca per nome o ruolo..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ccc',
+                  borderRadius: '8px',
+                  fontSize: '14px',
                 }}
-                className="delete-button"
-                title="Elimina giocatore"
-              >
-                <i className="bi bi-trash"></i>
-              </button>
-              <div className="card-body">
-                <h5 className="card-title">{player.name}</h5>
-                <p className="card-text small-text">
-                  <strong>Valore Totale:</strong> {player.valoreTotale || 0}
-                </p>
-                <p className="card-text small-text">
-                  <strong>Ruolo:</strong> {player.ruolo || 'Non assegnato'}
-                </p>
-              </div>
+              />
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '15px',
+                padding: '10px',
+                borderRadius: '10px',
+                backgroundColor: '#f9f9f9',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              {filteredPlayers.map((player) => (
+                <div
+                  key={player.name}
+                  className={`player-card ${
+                    selectedPlayers.includes(player) ? 'selected' : ''
+                  }`}
+                  onMouseEnter={() => setHoveredPlayer(player)}
+                  onMouseLeave={() => setHoveredPlayer(null)}
+                  onClick={() => togglePlayerSelection(player)}
+                >
+                  {/* Header: Nome */}
+                  <h4 className="player-card-header">{player.name}</h4>
+
+                  {/* Corpo: Ruolo e Valore */}
+                  <div className="player-card-body">
+                    <p className="player-role">
+                      {player.ruolo === 'Attaccante'
+                        ? 'AT'
+                        : player.ruolo === 'Centrocampista'
+                        ? 'CC'
+                        : player.ruolo === 'Difensore'
+                        ? 'DF'
+                        : 'N/A'}
+                    </p>
+                    <p className="player-value">{player.valoreTotale || 0}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
+
+          {/* Grafico Radar */}
+          <div style={{ flex: 1, position: 'sticky', top: '20px', padding: '20px' }}>
+            <PlayerRadarChart player={hoveredPlayer} />
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Modale per aggiungere un nuovo giocatore */}
       <AddPlayerModal
         show={showAddPlayerModal}
         onClose={() => setShowAddPlayerModal(false)}
