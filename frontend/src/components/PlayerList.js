@@ -12,7 +12,8 @@ function PlayerList({ onTeamsUpdate }) {
   const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [hoveredPlayer, setHoveredPlayer] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(''); // Stato per la ricerca
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRole, setSelectedRole] = useState(''); // Stato per il filtro per ruolo
 
   useEffect(() => {
     axios
@@ -54,9 +55,8 @@ function PlayerList({ onTeamsUpdate }) {
 
   // Funzione per filtrare i giocatori
   const filteredPlayers = players.filter((player) =>
-    player.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (player.ruolo &&
-      player.ruolo.toLowerCase().includes(searchQuery.toLowerCase()))
+    player.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    (selectedRole === '' || player.ruolo === selectedRole)
   );
 
   return (
@@ -95,21 +95,49 @@ function PlayerList({ onTeamsUpdate }) {
         <div style={{ display: 'flex', gap: '20px', padding: '10px' }}>
           {/* Lista Giocatori */}
           <div style={{ flex: 2, overflowY: 'auto', maxHeight: '500px', padding: '10px' }}>
-            {/* Campo di Ricerca */}
-            <div style={{ marginBottom: '15px' }}>
+            {/* Campo di Ricerca Fisso */}
+            <div
+              style={{
+                display: 'flex',
+                position: 'sticky',
+                top: 0,
+                backgroundColor: 'white',
+                zIndex: 10,
+                paddingBottom: '10px',
+                gap: '10px',
+              }}
+            >
               <input
                 type="text"
-                placeholder="Cerca per nome o ruolo..."
+                placeholder="Cerca per nome..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
-                  width: '100%',
+                  flex: 2,
                   padding: '10px',
                   border: '1px solid #ccc',
                   borderRadius: '8px',
                   fontSize: '14px',
                 }}
               />
+
+              {/* Menù a tendina per ruolo */}
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  border: '1px solid #ccc',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                }}
+              >
+                <option value="">Tutti i ruoli</option>
+                <option value="Attaccante">Attaccante</option>
+                <option value="Centrocampista">Centrocampista</option>
+                <option value="Difensore">Difensore</option>
+              </select>
             </div>
 
             <div

@@ -65,12 +65,6 @@ function Login({ setLoggedIn }) {
           placeholder="Username"
           value={formData.username}
           onChange={handleChange}
-<<<<<<< HEAD
-          maxLength="10" // Limita la lunghezza a 10 caratteri
-          pattern="[A-Za-z0-9]+" // Consente solo lettere e numeri
-          title="Il nome può contenere solo lettere e numeri, massimo 10 caratteri"
-=======
->>>>>>> f78ac1c92fed7ff391255cb8708050f8b3db3592
           required
         />
         <input
