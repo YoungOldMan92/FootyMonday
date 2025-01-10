@@ -72,59 +72,77 @@ function determineRole(player) {
 // Crea un nuovo giocatore
 router.post('/', authenticate, async (req, res) => {
   try {
-    const calculateAverage = (group) => {
-      const values = Object.values(group);
-      return values.reduce((sum, value) => sum + value, 0) / values.length;
-    };
 
-    const { capacitaTecnica, resistenzaFisica, posizionamentoTattico, capacitaDifensiva, contributoInAttacco, mentalitaEComportamento } = req.body;
+    console.log('Passo 1: Dati ricevuti dal frontend:', req.body);
 
-    // Calcola le medie per ogni gruppo
-    const playerData = {
-      ...req.body,
-      capacitaTecnica: {
-        ...capacitaTecnica,
-        media: calculateAverage(capacitaTecnica),
-      },
-      resistenzaFisica: {
-        ...resistenzaFisica,
-        media: calculateAverage(resistenzaFisica),
-      },
-      posizionamentoTattico: {
-        ...posizionamentoTattico,
-        media: calculateAverage(posizionamentoTattico),
-      },
-      capacitaDifensiva: {
-        ...capacitaDifensiva,
-        media: calculateAverage(capacitaDifensiva),
-      },
-      contributoInAttacco: {
-        ...contributoInAttacco,
-        media: calculateAverage(contributoInAttacco),
-      },
-      mentalitaEComportamento: {
-        ...mentalitaEComportamento,
-        media: calculateAverage(mentalitaEComportamento),
-      },
-    };
+    const { name, ruolo, isGuest } = req.body;
 
-    // Calcola il valore totale
-    playerData.valoreTotale =
-      playerData.capacitaTecnica.media +
-      playerData.resistenzaFisica.media +
-      playerData.posizionamentoTattico.media +
-      playerData.capacitaDifensiva.media +
-      playerData.contributoInAttacco.media +
-      playerData.mentalitaEComportamento.media;
+    // Controlla se esiste già un giocatore con lo stesso nome associato a questo utente
+    const existingPlayer = await Player.findOne({
+      name: { $regex: new RegExp(`^${name}$`, 'i') },  // Ricerca case-insensitive
+      userId: req.userId
+    });
 
+    if (existingPlayer) {
+      return res.status(400).json({ error: 'Esiste già un giocatore con questo nome.' });
+    }
+    
+
+    let playerData;
+
+    if (isGuest) {
+      // Gestione giocatore guest: imposta valori predefiniti
+      if (!name || !ruolo) {
+        console.log('Passo 2: Nome o ruolo mancanti per giocatore guest');
+        return res.status(400).json({ error: "Nome e ruolo sono richiesti per i giocatori guest." });
+      }
+      console.log('Passo 3: Preparazione dati per giocatore guest');
+      playerData = {
+        name: `${name} - Guest`,
+        ruolo,
+        isGuest: true,
+        capacitaTecnica: { controlloPalla: 5, dribbling: 5, precisionePassaggi: 5, tiro: 5 },
+        resistenzaFisica: { stamina: 5, velocita: 5, resistenzaSforzo: 5 },
+        posizionamentoTattico: { anticipazione: 5, copertura: 5, adattabilitaTattica: 5 },
+        capacitaDifensiva: { contrasto: 5, intercettazioni: 5, coperturaSpazi: 5 },
+        contributoInAttacco: { creativita: 5, movimentoSenzaPalla: 5, finalizzazione: 5 },
+        mentalitaEComportamento: { leadership: 5, gestioneStress: 5, sportivita: 5 },
+        valoreTotale: 30,
+        userId: req.userId,
+      };
+    } else {
+      // Gestione giocatore regular (logica preesistente)
+      const calculateAverage = (group) => {
+        const values = Object.values(group);
+        return values.reduce((sum, value) => sum + value, 0) / values.length;
+      };
+
+      const { capacitaTecnica, resistenzaFisica, posizionamentoTattico, capacitaDifensiva, contributoInAttacco, mentalitaEComportamento } = req.body;
+
+      playerData = {
+        ...req.body,
+        capacitaTecnica: { ...capacitaTecnica, media: calculateAverage(capacitaTecnica) },
+        resistenzaFisica: { ...resistenzaFisica, media: calculateAverage(resistenzaFisica) },
+        posizionamentoTattico: { ...posizionamentoTattico, media: calculateAverage(posizionamentoTattico) },
+        capacitaDifensiva: { ...capacitaDifensiva, media: calculateAverage(capacitaDifensiva) },
+        contributoInAttacco: { ...contributoInAttacco, media: calculateAverage(contributoInAttacco) },
+        mentalitaEComportamento: { ...mentalitaEComportamento, media: calculateAverage(mentalitaEComportamento) },
+        valoreTotale: 30, // Calcolo del valore totale
+      };
+    }
+
+    console.log('Passo 4: Prima di creare il nuovo giocatore:', playerData);
     const newPlayer = new Player(playerData);
+    console.log('Passo 5: Prima del salvataggio su MongoDB');
     const savedPlayer = await newPlayer.save();
     res.status(201).json(savedPlayer);
   } catch (err) {
+    
     console.error('Errore durante la creazione del giocatore:', err.message);
     res.status(400).json({ error: err.message });
   }
 });
+
 
 router.post('/update-goals', authenticate, async (req, res) => {
   try {

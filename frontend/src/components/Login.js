@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../config';
+import { InputText } from 'primereact/inputtext';
+import { Password } from 'primereact/password';
+import { Button } from 'primereact/button';
+import { Panel } from 'primereact/panel';
+import '../Login.css';
 
 function Login({ setLoggedIn }) {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
+
+  // Controllo Token al Caricamento
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setLoggedIn(true); // Imposta login se token esiste
+    }
+  }, [setLoggedIn]);
 
   const validateForm = () => {
     let isValid = true;
@@ -34,50 +47,65 @@ function Login({ setLoggedIn }) {
     e.preventDefault();
     setError('');
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
+      console.log('Invio dati:', formData);
+
       const response = await axios.post(`${config.apiBaseUrl}/user/login`, formData);
       const token = response.data.token;
 
       // Salva il token nel localStorage
       localStorage.setItem('token', token);
 
-      // Imposta lo stato di login
+      // Aggiorna lo stato e ricarica la pagina
       setLoggedIn(true);
-
-      // Reindirizza l'utente (puoi usare react-router per questo)
-      window.location.href = '/';
+      window.location.reload();
     } catch (err) {
+      console.error('Errore nel login:', err.response ? err.response.data : err.message);
       setError('Credenziali non valide. Riprova.');
     }
   };
 
   return (
-    <div>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="username"
-          placeholder="Username"
-          value={formData.username}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Accedi</button>
-      </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div className="login-container">
+      <Panel header="Accedi" style={{ width: '350px', margin: '0 auto', marginTop: '50px' }}>
+        <form onSubmit={handleSubmit}>
+          <div className="p-field" style={{ marginBottom: '15px' }}>
+            <label htmlFor="username">Username</label>
+            <InputText
+              id="username"
+              name="username"
+              placeholder="Inserisci username"
+              value={formData.username}
+              onChange={handleChange}
+              className="p-inputtext"
+              required
+            />
+          </div>
+          <div className="p-field" style={{ marginBottom: '15px' }}>
+            <label htmlFor="password">Password</label>
+            <Password
+              id="password"
+              name="password"
+              placeholder="Inserisci password"
+              value={formData.password}
+              onChange={handleChange}
+              feedback={false}
+              toggleMask
+              required
+            />
+          </div>
+          {error && <p style={{ color: 'red', fontSize: '14px', marginBottom: '15px' }}>{error}</p>}
+          <Button
+            label="Accedi"
+            icon="pi pi-sign-in"
+            className="p-button-primary"
+            type="submit"
+            style={{ width: '100%' }}
+          />
+        </form>
+      </Panel>
     </div>
   );
 }

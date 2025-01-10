@@ -1,5 +1,13 @@
 .App {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #f4f4f4;
 }
 
 .App-logo {
@@ -38,8 +46,10 @@
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  font-family: 'Arial', sans-serif;
 }
+
 
 
 /* Colore dei titoli */
@@ -154,6 +164,34 @@ h2 {
 .card-text.small-text {
   font-size: 0.8rem !important; /* Riduce il testo con priorità alta */
   color: #6c757d; /* Colore grigio */
+}
+
+/* Menubar principale */
+.p-menubar {
+  background-color: #007ad9; /* Colore di sfondo */
+  color: #ffffff; /* Colore del testo */
+  border: none; /* Rimuove il bordo */
+}
+
+.p-menubar .p-menuitem-link {
+  text-decoration: none; /* Rimuove la sottolineatura dai link */
+  color: #ffffff; /* Imposta il colore bianco per i link */
+  font-weight: bold; /* Rende il testo più visibile */
+  transition: color 0.3s; /* Aggiunge un effetto di transizione */
+}
+
+.p-menubar .p-menuitem-link:hover {
+  color: #cce5ff; /* Cambia leggermente il colore al passaggio del mouse */
+}
+
+.p-menubar .p-button-danger {
+  margin-left: 10px;
+  color: #ffffff; /* Colore bianco per il pulsante logout */
+  border-color: #ffffff; /* Colore del bordo del pulsante logout */
+}
+
+.p-menubar .p-menuitem-link:focus {
+  outline: none; /* Rimuove il focus outline */
 }
 
 .p-card-selected {

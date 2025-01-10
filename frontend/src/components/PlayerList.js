@@ -4,6 +4,7 @@ import config from '../config';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import AddPlayerModal from './AddPlayerModal';
+import PlayerManagementModal from './PlayerManagementModal';
 import PlayerRadarChart from './PlayerRadarChart';
 
 function PlayerList({ onTeamsUpdate }) {
@@ -13,22 +14,31 @@ function PlayerList({ onTeamsUpdate }) {
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [hoveredPlayer, setHoveredPlayer] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRole, setSelectedRole] = useState(''); // Stato per il filtro per ruolo
+  const [selectedRole, setSelectedRole] = useState('');
+  const [showPlayerManagementModal, setShowPlayerManagementModal] = useState(false);
+
 
   useEffect(() => {
-    axios
-      .get(`${config.apiBaseUrl}/players`)
-      .then((response) => {
+    const fetchPlayers = async () => {
+      try {
+        const token = localStorage.getItem('token'); // Recupera il token dal localStorage
+        const response = await axios.get(`${config.apiBaseUrl}/players`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setPlayers(response.data || []);
-      })
-      .catch((err) => console.error('Errore durante il caricamento dei giocatori:', err));
+      } catch (err) {
+        console.error('Errore durante il caricamento dei giocatori:', err);
+      }
+    };
+
+    fetchPlayers();
   }, []);
 
   const togglePlayerSelection = (player) => {
     setSelectedPlayers((prev) =>
-      prev.includes(player)
-        ? prev.filter((p) => p !== player)
-        : [...prev, player]
+      prev.includes(player) ? prev.filter((p) => p !== player) : [...prev, player]
     );
   };
 
@@ -53,26 +63,19 @@ function PlayerList({ onTeamsUpdate }) {
     setShowPlayerModal(false);
   };
 
-  // Funzione per filtrare i giocatori
-  const filteredPlayers = players.filter((player) =>
-    player.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (selectedRole === '' || player.ruolo === selectedRole)
+  const filteredPlayers = players.filter(
+    (player) =>
+      player.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (selectedRole === '' || player.ruolo === selectedRole)
   );
 
   return (
     <div>
-      <h2>Gestione Squadre</h2>
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <Button
-          label="Crea Squadre"
-          icon="pi pi-users"
-          onClick={() => setShowPlayerModal(true)}
-        />
-        <Button
-          label="Aggiungi Giocatore"
-          icon="pi pi-plus"
-          onClick={() => setShowAddPlayerModal(true)}
-        />
+        <Button label="Crea Squadre" icon="pi pi-users" onClick={() => setShowPlayerModal(true)} />
+        <Button label="Aggiungi Giocatore" icon="pi pi-plus" onClick={() => setShowAddPlayerModal(true)} />
+        <Button label="Gestisci Giocatori" icon="pi pi-user-edit" onClick={() => setShowPlayerManagementModal(true)}/>
+      
       </div>
 
       {/* Modale per la selezione dei giocatori */}
@@ -95,7 +98,6 @@ function PlayerList({ onTeamsUpdate }) {
         <div style={{ display: 'flex', gap: '20px', padding: '10px' }}>
           {/* Lista Giocatori */}
           <div style={{ flex: 2, overflowY: 'auto', maxHeight: '500px', padding: '10px' }}>
-            {/* Campo di Ricerca Fisso */}
             <div
               style={{
                 display: 'flex',
@@ -120,8 +122,6 @@ function PlayerList({ onTeamsUpdate }) {
                   fontSize: '14px',
                 }}
               />
-
-              {/* Menù a tendina per ruolo */}
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
@@ -148,53 +148,45 @@ function PlayerList({ onTeamsUpdate }) {
                 padding: '10px',
                 borderRadius: '10px',
                 backgroundColor: '#f9f9f9',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
               }}
             >
               {filteredPlayers.map((player) => (
                 <div
                   key={player.name}
-                  className={`player-card ${
-                    selectedPlayers.includes(player) ? 'selected' : ''
-                  }`}
+                  className={`player-card ${selectedPlayers.includes(player) ? 'selected' : ''}`}
                   onMouseEnter={() => setHoveredPlayer(player)}
                   onMouseLeave={() => setHoveredPlayer(null)}
                   onClick={() => togglePlayerSelection(player)}
                 >
-                  {/* Header: Nome */}
                   <h4 className="player-card-header">{player.name}</h4>
-
-                  {/* Corpo: Ruolo e Valore */}
                   <div className="player-card-body">
-                    <p className="player-role">
-                      {player.ruolo === 'Attaccante'
-                        ? 'AT'
-                        : player.ruolo === 'Centrocampista'
-                        ? 'CC'
-                        : player.ruolo === 'Difensore'
-                        ? 'DF'
-                        : 'N/A'}
-                    </p>
+                    <p className="player-role">{player.ruolo}</p>
                     <p className="player-value">{player.valoreTotale || 0}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Grafico Radar */}
           <div style={{ flex: 1, position: 'sticky', top: '20px', padding: '20px' }}>
             <PlayerRadarChart player={hoveredPlayer} />
           </div>
         </div>
       </Dialog>
 
-      {/* Modale per aggiungere un nuovo giocatore */}
       <AddPlayerModal
         show={showAddPlayerModal}
         onClose={() => setShowAddPlayerModal(false)}
         setPlayers={setPlayers}
       />
+
+      <PlayerManagementModal
+        show={showPlayerManagementModal}
+        onClose={() => setShowPlayerManagementModal(false)} // Chiudi il modale quando richiesto
+        players={players}
+        setPlayers={setPlayers}
+      />
+
+
     </div>
   );
 }

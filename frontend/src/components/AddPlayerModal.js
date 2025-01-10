@@ -1,195 +1,233 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { Dropdown } from 'primereact/dropdown';
+import { RadioButton } from 'primereact/radiobutton';
 import config from '../config';
 
 function AddPlayerModal({ show, onClose, setPlayers }) {
-  const [guestName, setGuestName] = useState('');
-  const [guestRole, setGuestRole] = useState('Attaccante'); // Ruolo predefinito
-
-  const addPlayer = async (playerData) => {
-    try {
-      const token = localStorage.getItem('token'); // Recupera il token JWT
-
-      // Decodifica il token per ottenere l'userId
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const decodedToken = JSON.parse(window.atob(base64));
-      const userId = decodedToken.userId; // Assumendo che il token abbia un campo 'id'
-
-      // Aggiungi l'userId ai dati del giocatore
-      playerData.userId = userId;
-      const response = await fetch(`${config.apiBaseUrl}/players`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Aggiunge il token JWT
-        },
-        body: JSON.stringify(playerData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Errore HTTP: ${response.status}`);
-      }
-
-      const savedPlayer = await response.json();
-      setPlayers((prevPlayers) => [...prevPlayers, savedPlayer]);
-    } catch (error) {
-      console.error('Errore durante la creazione del giocatore:', error.message);
-      alert('Errore durante il salvataggio del giocatore.');
-    }
-  };
-
-  const parsePlayerData = (data) => ({
-    name: data.nome || 'Sconosciuto',
-    capacitaTecnica: {
-      controlloPalla: Number(data.controlloPalla) || 0,
-      dribbling: Number(data.dribbling) || 0,
-      precisionePassaggi: Number(data.precisionePassaggi) || 0,
-      tiro: Number(data.tiro) || 0,
-    },
-    resistenzaFisica: {
-      stamina: Number(data.stamina) || 0,
-      velocita: Number(data.velocita) || 0,
-      resistenzaSforzo: Number(data.resistenzaSforzo) || 0,
-    },
-    posizionamentoTattico: {
-      anticipazione: Number(data.anticipazione) || 0,
-      copertura: Number(data.copertura) || 0,
-      adattabilitaTattica: Number(data.adattabilitaTattica) || 0,
-    },
-    capacitaDifensiva: {
-      contrasto: Number(data.contrasto) || 0,
-      intercettazioni: Number(data.intercettazioni) || 0,
-      coperturaSpazi: Number(data.coperturaSpazi) || 0,
-    },
-    contributoInAttacco: {
-      creativita: Number(data.creativita) || 0,
-      movimentoSenzaPalla: Number(data.movimentoSenzaPalla) || 0,
-      finalizzazione: Number(data.finalizzazione) || 0,
-    },
-    mentalitaEComportamento: {
-      leadership: Number(data.leadership) || 0,
-      gestioneStress: Number(data.gestioneStress) || 0,
-      sportivita: Number(data.sportivita) || 0,
-    },
+  const [playerType, setPlayerType] = useState('regular'); // Stato per RadioBox
+  
+  const [playerData, setPlayerData] = useState({
+    nome: '',
+    controlloPalla: '',
+    dribbling: '',
+    precisionePassaggi: '',
+    tiro: '',
+    stamina: '',
+    velocita: '',
+    resistenzaSforzo: '',
+    anticipazione: '',
+    copertura: '',
+    adattabilitaTattica: '',
+    contrasto: '',
+    intercettazioni: '',
+    coperturaSpazi: '',
+    creativita: '',
+    movimentoSenzaPalla: '',
+    finalizzazione: '',
+    leadership: '',
+    gestioneStress: '',
+    sportivita: '',
   });
 
-  const handleGenerateGuest = () => {
-    if (!guestName.trim()) {
-      alert('Inserisci un nome per il giocatore ospite.');
-      return;
+  const [role, setRole] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const roles = [
+    { label: 'Attaccante', value: 'Attaccante' },
+    { label: 'Centrocampista', value: 'Centrocampista' },
+    { label: 'Difensore', value: 'Difensore' },
+  ];
+
+  const addPlayer = async (data) => {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post(`${config.apiBaseUrl}/players`, data, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setPlayers((prev) => [...prev, response.data]);
+        onClose();
+    } catch (error) {
+        if (error.response && error.response.status === 400 && error.response.data.message === 'Esiste già un giocatore con questo nome.') {
+            setErrorMessage('Esiste già un giocatore con questo nome! Scegli un nome diverso.');
+        } else {
+            setErrorMessage('Errore durante il salvataggio del giocatore. Riprova più tardi.');
+        }
     }
+};
 
-    const guestPlayerData = {
-      name: guestName.trim() + " - Guest",
-      capacitaTecnica: { controlloPalla: 5, dribbling: 5, precisionePassaggi: 5, tiro: 5 },
-      resistenzaFisica: { stamina: 5, velocita: 5, resistenzaSforzo: 5 },
-      posizionamentoTattico: { anticipazione: 5, copertura: 5, adattabilitaTattica: 5 },
-      capacitaDifensiva: { contrasto: 5, intercettazioni: 5, coperturaSpazi: 5 },
-      contributoInAttacco: { creativita: 5, movimentoSenzaPalla: 5, finalizzazione: 5 },
-      mentalitaEComportamento: { leadership: 5, gestioneStress: 5, sportivita: 5 },
-      ruolo: guestRole,
-      isGuest: true,
-    };
 
-    addPlayer(guestPlayerData);
-    setGuestName('');
+  const handleInputChange = (e, field) => {
+    setPlayerData({ ...playerData, [field]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target);
-    const playerData = parsePlayerData(Object.fromEntries(formData.entries()));
+    let newPlayer = {};
 
-    addPlayer(playerData); // Invio al backend
-    e.target.reset();
-    onClose();
+    if (playerType === 'regular') {
+      newPlayer = {
+        name: playerData.nome,
+        ruolo: role || 'Non assegnato',
+        capacitaTecnica: {
+          controlloPalla: parseInt(playerData.controlloPalla, 10),
+          dribbling: parseInt(playerData.dribbling, 10),
+          precisionePassaggi: parseInt(playerData.precisionePassaggi, 10),
+          tiro: parseInt(playerData.tiro, 10),
+        },
+        resistenzaFisica: {
+          stamina: parseInt(playerData.stamina, 10),
+          velocita: parseInt(playerData.velocita, 10),
+          resistenzaSforzo: parseInt(playerData.resistenzaSforzo, 10),
+        },
+        posizionamentoTattico: {
+          anticipazione: parseInt(playerData.anticipazione, 10),
+          copertura: parseInt(playerData.copertura, 10),
+          adattabilitaTattica: parseInt(playerData.adattabilitaTattica, 10),
+        },
+        capacitaDifensiva: {
+          contrasto: parseInt(playerData.contrasto, 10),
+          intercettazioni: parseInt(playerData.intercettazioni, 10),
+          coperturaSpazi: parseInt(playerData.coperturaSpazi, 10),
+        },
+        contributoInAttacco: {
+          creativita: parseInt(playerData.creativita, 10),
+          movimentoSenzaPalla: parseInt(playerData.movimentoSenzaPalla, 10),
+          finalizzazione: parseInt(playerData.finalizzazione, 10),
+        },
+        mentalitaEComportamento: {
+          leadership: parseInt(playerData.leadership, 10),
+          gestioneStress: parseInt(playerData.gestioneStress, 10),
+          sportivita: parseInt(playerData.sportivita, 10),
+        },
+        valoreTotale: 0,
+        isGuest: false,
+      };
+    } else {
+      newPlayer = {
+        name: `${playerData.nome} - Guest`,
+        ruolo: role || 'Non assegnato',
+        capacitaTecnica: { controlloPalla: 5, dribbling: 5, precisionePassaggi: 5, tiro: 5 },
+        resistenzaFisica: { stamina: 5, velocita: 5, resistenzaSforzo: 5 },
+        posizionamentoTattico: { anticipazione: 5, copertura: 5, adattabilitaTattica: 5 },
+        capacitaDifensiva: { contrasto: 5, intercettazioni: 5, coperturaSpazi: 5 },
+        contributoInAttacco: { creativita: 5, movimentoSenzaPalla: 5, finalizzazione: 5 },
+        mentalitaEComportamento: { leadership: 5, gestioneStress: 5, sportivita: 5 },
+        valoreTotale: 5,
+        isGuest: true,
+      };
+    }
+    console.log('Payload inviato:', newPlayer);
+    addPlayer(newPlayer);
   };
 
-  if (!show) return null;
-
   return (
-    <div
-      className="modal d-block fade-in"
-      style={{
-        position: 'absolute',
-        top: '20%',
-        left: '50%',
-        transform: 'translate(-50%, -20%)',
-        zIndex: 1050,
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        padding: '20px',
-        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.2)',
-        maxWidth: '600px',
-        width: '90%',
-      }}
+    <Dialog
+      header="Aggiungi Nuovo Giocatore"
+      visible={show}
+      onHide={onClose}
+      style={{ width: '50vw' }}
+      footer={
+        <div>
+          <Button label="Annulla" icon="pi pi-times" onClick={onClose} className="p-button-text" />
+          <Button label="Aggiungi Giocatore" icon="pi pi-check" onClick={handleSubmit} />
+        </div>
+      }
     >
-      <div className="modal-header">
-        <h5 className="modal-title">Aggiungi Giocatore</h5>
-        <button onClick={onClose} className="btn-close"></button>
+      <div className="p-field-radiobutton">
+        <RadioButton
+          inputId="regular"
+          name="playerType"
+          value="regular"
+          onChange={(e) => setPlayerType(e.value)}
+          checked={playerType === 'regular'}
+        />
+        <label htmlFor="regular" style={{ marginRight: '1rem' }}>Regular</label>
+
+        <RadioButton
+          inputId="guest"
+          name="playerType"
+          value="guest"
+          onChange={(e) => setPlayerType(e.value)}
+          checked={playerType === 'guest'}
+        />
+        <label htmlFor="guest">Guest</label>
       </div>
+
       <form onSubmit={handleSubmit}>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '15px',
-            marginBottom: '15px',
-          }}
-        >
-          <input type="text" name="nome" placeholder="Nome" required  maxLength="10" pattern="[A-Za-z0-9]+" title="Il nome può contenere solo lettere e numeri, massimo 10 caratteri" />
-          <input type="number" name="controlloPalla" placeholder="Controllo Palla" required min="1" max="10" />
-          <input type="number" name="dribbling" placeholder="Dribbling" required min="1" max="10" />
-          <input type="number" name="precisionePassaggi" placeholder="Precisione Passaggi" required min="1" max="10" />
-          <input type="number" name="tiro" placeholder="Tiro" required min="1" max="10" />
-          <input type="number" name="stamina" placeholder="Stamina" required min="1" max="10" />
-          <input type="number" name="velocita" placeholder="Velocità" required min="1" max="10" />
-          <input type="number" name="resistenzaSforzo" placeholder="Resistenza Sforzo" required min="1" max="10" />
-          <input type="number" name="anticipazione" placeholder="Anticipazione" required min="1" max="10" />
-          <input type="number" name="copertura" placeholder="Copertura" required min="1" max="10" />
-          <input type="number" name="adattabilitaTattica" placeholder="Adattabilità Tattica" required min="1" max="10" />
-          <input type="number" name="contrasto" placeholder="Contrasto" required min="1" max="10" />
-          <input type="number" name="intercettazioni" placeholder="Intercettazioni" required min="1" max="10" />
-          <input type="number" name="coperturaSpazi" placeholder="Copertura Spazi" required min="1" max="10" />
-          <input type="number" name="creativita" placeholder="Creatività" required min="1" max="10" />
-          <input type="number" name="movimentoSenzaPalla" placeholder="Movimento Senza Palla" required min="1" max="10" />
-          <input type="number" name="finalizzazione" placeholder="Finalizzazione" required min="1" max="10" />
-          <input type="number" name="leadership" placeholder="Leadership" required min="1" max="10" />
-          <input type="number" name="gestioneStress" placeholder="Gestione Stress" required min="1" max="10" />
-          <input type="number" name="sportivita" placeholder="Sportività" required min="1" max="10" />
-        </div>
-        <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '15px' }}>
-          Aggiungi
-        </button>
-        <div className="mt-3">
-          <input
-            type="text"
-            placeholder="Nome Giocatore Ospite"
-            value={guestName}
-            onChange={(e) => setGuestName(e.target.value)}
-            className="form-control"
+        <div className="p-field">
+          <label htmlFor="nome">Nome</label>
+          <InputText
+            id="nome"
+            value={playerData.nome}
+            onChange={(e) => handleInputChange(e, 'nome')}
+            placeholder="Nome"
+            required
           />
-          <select
-            value={guestRole}
-            onChange={(e) => setGuestRole(e.target.value)}
-            className="form-control mt-2"
-          >
-            <option value="Attaccante">Attaccante</option>
-            <option value="Centrocampista">Centrocampista</option>
-            <option value="Difensore">Difensore</option>
-          </select>
-          <button
-            type="button"
-            className="btn btn-secondary mt-2"
-            style={{ width: '100%' }}
-            onClick={handleGenerateGuest}
-          >
-            Genera Giocatore Ospite
-          </button>
         </div>
+
+        {errorMessage && (
+          <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
+        )}
+
+        {playerType === 'regular' && (
+          <div>
+            {[
+              'controlloPalla',
+              'dribbling',
+              'precisionePassaggi',
+              'tiro',
+              'stamina',
+              'velocita',
+              'resistenzaSforzo',
+              'anticipazione',
+              'copertura',
+              'adattabilitaTattica',
+              'contrasto',
+              'intercettazioni',
+              'coperturaSpazi',
+              'creativita',
+              'movimentoSenzaPalla',
+              'finalizzazione',
+              'leadership',
+              'gestioneStress',
+              'sportivita',
+            ].map((field) => (
+              <div key={field} className="p-field">
+                <label htmlFor={field}>{field}</label>
+                <InputText
+                  id={field}
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={playerData[field]}
+                  onChange={(e) => handleInputChange(e, field)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {playerType === 'guest' && (
+          <div>
+            <label htmlFor="role">Ruolo</label>
+            <Dropdown
+              id="role"
+              value={role}
+              options={roles}
+              onChange={(e) => setRole(e.value)}
+              placeholder="Seleziona Ruolo"
+              required
+            />
+          </div>
+        )}
       </form>
-    </div>
+    </Dialog>
   );
 }
 

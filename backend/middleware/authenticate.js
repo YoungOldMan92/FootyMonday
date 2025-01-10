@@ -2,6 +2,9 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const authenticate = (req, res, next) => {
+
+  console.log('MIDDLEWARE: Richiesta ricevuta nel middleware:', req.headers);
+
   const authHeader = req.headers.authorization;
   console.log('Richiesta ricevuta nel middleware:', req.headers);
 

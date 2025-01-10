@@ -1,132 +1,97 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
-import config from './config';
+import { Button } from 'primereact/button';
+import { Menubar } from 'primereact/menubar';
+import { Panel } from 'primereact/panel';
 import PlayerList from './components/PlayerList';
-import MatchHistory from './components/MatchHistory';
 import GoalLeaderboard from './components/GoalLeaderboard';
-import TeamDisplay from './components/TeamDisplay';
-import PlayerRadarChart from './components/PlayerRadarChart';
-import HomePage from './components/HomePage'; // Nuova home page per login e registrazione
-import 'primereact/resources/themes/lara-light-blue/theme.css'; // Tema PrimeReact (puoi scegliere un altro tema)
-import 'primereact/resources/primereact.min.css';              // Stili base di PrimeReact
-import 'primeicons/primeicons.css';                            // Icone PrimeReact
-import Modal from 'react-modal';
+import MatchHistory from './components/MatchHistory';
+import AddPlayerModal from './components/AddPlayerModal';
+import GolUpdateModal from './components/GolUpdateModal';
+import PlayerManagementModal from './components/PlayerManagementModal';
+import 'primereact/resources/themes/saga-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+import './App.css';
+import Login from './components/Login';
 import axios from 'axios';
-
-Modal.setAppElement('#root');
+import config from './config';
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(false); // Stato per il login
-  const [teams, setTeams] = useState({ teamA: [], teamB: [] });
-  const [hoveredPlayer, setHoveredPlayer] = useState(null);
-  const [matchHistory, setMatchHistory] = useState([]);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [showAddPlayerModal, setShowAddPlayerModal] = useState(false); // Stato per il modale
+  const [showPlayerModal, setShowPlayerModal] = useState(false);
+  const [showPlayerManagementModal, setShowPlayerManagementModal] = useState(false);
+  const [players, setPlayers] = useState([]); // Stato per la lista dei giocatori
 
-  // Effettua il controllo iniziale del login
+
+
+  // Verifica token al caricamento
   useEffect(() => {
     const token = localStorage.getItem('token');
+
     if (token) {
-      // Verify token validity with backend
-      axios.get(`${config.apiBaseUrl}/user/verify`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(() => {
-        setLoggedIn(true);
-      })
-      .catch(() => {
-        // Token is invalid or expired
-        localStorage.removeItem('token');
-        setLoggedIn(false);
-      });
-    } else {
-      setLoggedIn(false);
-    }
-  }, []);
-
-  // Configura Axios per includere il token JWT nelle richieste
-  useEffect(() => {
-    axios.interceptors.request.use((config) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    });
-  }, []);
-
-  useEffect(() => {
-    if (loggedIn) {
-      // Carica le squadre salvate dal backend solo se l'utente è autenticato
       axios
-        .get(`${config.apiBaseUrl}/teams`)
-        .then((response) => {
-          if (response.data.teams && response.data.teams.length > 0) {
-            setTeams({
-              teamA: response.data.teams[0],
-              teamB: response.data.teams[1],
-            });
-          }
+        .get(`${config.apiBaseUrl}/user/verify`, {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        .catch((err) => console.error('Errore durante il caricamento delle squadre:', err));
+        .then(() => {
+          setLoggedIn(true);
+        })
+        .catch(() => {
+          localStorage.removeItem('token');
+          setLoggedIn(false);
+        });
     }
-  }, [loggedIn]);
-
-  const handleTeamsUpdate = (newTeamA, newTeamB) => {
-    // Aggiorna immediatamente lo stato delle squadre
-    setTeams({ teamA: newTeamA, teamB: newTeamB });
-  };
-
-  const handleAddMatch = (newMatch) => {
-    setMatchHistory((prevHistory) => [...prevHistory, newMatch]);
-  };
+  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Rimuove il token dal localStorage
-    setLoggedIn(false); // Reimposta lo stato di autenticazione
-    setTeams({ teamA: [], teamB: [] }); // Pulisce i dati utente
-    setMatchHistory([]); // Pulisce lo storico
+    localStorage.removeItem('token');
+    setLoggedIn(false);
   };
 
+
+  const start = <h3 style={{ margin: 0 }}>Footy Monday</h3>;
+  const end = (
+    <Button
+      label="Logout"
+      icon="pi pi-sign-out"
+      className="p-button-danger p-button-outlined"
+      onClick={handleLogout}
+    />
+  );
+
   if (!loggedIn) {
-    return <HomePage setLoggedIn={setLoggedIn} />; // Nuova home page
-  }else{
     return (
-      <div className="container">
-        <header className="mb-4">
-          <nav className="navbar navbar-expand-lg navbar-light bg-light">
-            <a className="navbar-brand" href="#">FootyMonday</a>
-            <button className="btn btn-outline-danger ml-auto" onClick={handleLogout}>
-              Logout
-            </button>
-          </nav>
-        </header>
-        <main>
-          <div className="row">
-            <div className="col-md-6">
-              <PlayerList
-                onTeamsUpdate={handleTeamsUpdate}
-                setHoveredPlayer={setHoveredPlayer}
-              />
-            </div>
-            <div className="col-md-6">
-              <GoalLeaderboard />
-              <br />
-              <PlayerRadarChart player={hoveredPlayer} />
-            </div>
-          </div>
-          <div className="mt-4">
-            <TeamDisplay
-              teamA={teams.teamA}
-              teamB={teams.teamB}
-              onAddMatch={handleAddMatch}
-            />
-          </div>
-          <div className="mt-4">
-            <MatchHistory history={matchHistory} />
-          </div>
-        </main>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>
+        <Login setLoggedIn={setLoggedIn} />
       </div>
     );
   }
+
+  return (
+    <div className="App">
+
+      <div className="main-content" style={{ padding: '20px' }}>
+        <Panel header="Footy Monday">
+          <PlayerList />
+        </Panel>
+        <GoalLeaderboard />
+        <MatchHistory />
+      </div>
+
+      {/* Modale Aggiunta Giocatore */}
+      <AddPlayerModal
+        show={showAddPlayerModal}
+        onClose={() => setShowAddPlayerModal(false)}
+      />
+      <PlayerManagementModal
+        show={showPlayerManagementModal}
+        onClose={() => setShowPlayerManagementModal(false)}
+        setPlayers={setPlayers}
+      />
+
+    </div>
+  );
 }
 
 export default App;
