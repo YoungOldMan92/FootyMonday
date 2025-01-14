@@ -273,6 +273,80 @@ h2 {
   margin-top: 10px;
 }
 
+.player-card-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.player-card-value {
+  font-size: 28px; /* Testo più grande */
+  font-weight: bold;
+  color: #007bff;
+  display: flex;
+  justify-content: center; /* Allinea il contenuto orizzontalmente */
+  align-items: center; /* Allinea il contenuto verticalmente */
+  height: 100%; /* Occupa tutta l'altezza del contenitore */
+  margin: 0; /* Rimuove i margini di default */
+  text-align: center; /* Centra il testo */
+}
+
+
+
+.player-card.no-animation {
+  transform: none; /* Nessuna trasformazione */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Ombra leggera e statica */
+  transition: none; /* Disabilita tutte le transizioni */
+}
+
+/* Griglia di schede solo per il modale di gestione giocatori */
+.player-card-grid-management {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 schede per riga */
+  gap: 15px;
+  padding: 20px 0;
+}
+
+.player-card-grid-management .player-card {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  height: 180px; /* Altezza fissa */
+}
+
+.player-card-grid-management .player-card-actions {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.player-card-grid-management .player-card-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.player-card-grid-management .player-card-header p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.player-card-grid-management .player-card-body p {
+  font-size: 14px;
+  color: #007bff;
+  font-weight: bold;
+}
+
+
 .player-role {
   margin: 0;
   font-size: 14px;
@@ -588,18 +662,34 @@ h2 {
 }
 
 .modal-close-button {
-  background-color: #dc3545;
+  background-color: #6c757d;
   color: white;
-  padding: 10px 15px;
   border: none;
-  border-radius: 4px;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 14px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .modal-close-button:hover {
-  background-color: #c82333;
+  background-color: #5a6268;
 }
 
+.modal-confirm-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-confirm-button:hover {
+  background-color: #c82333;
+}
 
 .team-section {
   width: 45%;

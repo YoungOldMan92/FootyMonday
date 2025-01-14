@@ -73,20 +73,17 @@ function App() {
 
       <div className="main-content" style={{ padding: '20px' }}>
         <Panel header="Footy Monday">
-          <PlayerList />
+        <PlayerList players={players} setPlayers={setPlayers} />
+
         </Panel>
         <GoalLeaderboard />
         <MatchHistory />
       </div>
 
-      {/* Modale Aggiunta Giocatore */}
-      <AddPlayerModal
-        show={showAddPlayerModal}
-        onClose={() => setShowAddPlayerModal(false)}
-      />
       <PlayerManagementModal
         show={showPlayerManagementModal}
         onClose={() => setShowPlayerManagementModal(false)}
+        players={players}
         setPlayers={setPlayers}
       />
 

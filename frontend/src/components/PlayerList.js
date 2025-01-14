@@ -7,8 +7,8 @@ import AddPlayerModal from './AddPlayerModal';
 import PlayerManagementModal from './PlayerManagementModal';
 import PlayerRadarChart from './PlayerRadarChart';
 
-function PlayerList({ onTeamsUpdate }) {
-  const [players, setPlayers] = useState([]);
+function PlayerList({ players, setPlayers, onTeamsUpdate }) {
+
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
   const [selectedPlayers, setSelectedPlayers] = useState([]);
@@ -32,9 +32,10 @@ function PlayerList({ onTeamsUpdate }) {
         console.error('Errore durante il caricamento dei giocatori:', err);
       }
     };
-
+  
     fetchPlayers();
-  }, []);
+  }, [setPlayers]); // Usa setPlayers come dipendenza
+  
 
   const togglePlayerSelection = (player) => {
     setSelectedPlayers((prev) =>
@@ -73,7 +74,6 @@ function PlayerList({ onTeamsUpdate }) {
     <div>
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
         <Button label="Crea Squadre" icon="pi pi-users" onClick={() => setShowPlayerModal(true)} />
-        <Button label="Aggiungi Giocatore" icon="pi pi-plus" onClick={() => setShowAddPlayerModal(true)} />
         <Button label="Gestisci Giocatori" icon="pi pi-user-edit" onClick={() => setShowPlayerManagementModal(true)}/>
       
       </div>
@@ -173,11 +173,6 @@ function PlayerList({ onTeamsUpdate }) {
         </div>
       </Dialog>
 
-      <AddPlayerModal
-        show={showAddPlayerModal}
-        onClose={() => setShowAddPlayerModal(false)}
-        setPlayers={setPlayers}
-      />
 
       <PlayerManagementModal
         show={showPlayerManagementModal}

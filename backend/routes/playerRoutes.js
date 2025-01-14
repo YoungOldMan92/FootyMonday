@@ -215,10 +215,41 @@ router.delete('/:name', authenticate, async (req, res) => {
     if (!deletedPlayer) {
       return res.status(404).json({ error: 'Giocatore non trovato.' });
     }
-    res.status(200).json(deletedPlayer);
+
+    // Dopo la cancellazione, recupera la lista aggiornata dei giocatori
+    const updatedPlayers = await Player.find({ userId: req.userId });
+
+    res.status(200).json({ message: 'Giocatore eliminato con successo.', players: updatedPlayers });
   } catch (err) {
+    console.error('Errore durante l\'eliminazione del giocatore:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
+
+router.put('/:name', authenticate, async (req, res) => {
+  try {
+    const playerName = req.params.name;
+    const updatedData = req.body;
+
+    // Trova e aggiorna il giocatore usando il nome e l'userId per sicurezza
+    const updatedPlayer = await Player.findOneAndUpdate(
+      { name: { $regex: new RegExp(`^${playerName}$`, 'i') }, userId: req.userId }, 
+      updatedData, 
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedPlayer) {
+      return res.status(404).json({ error: 'Giocatore non trovato.' });
+    }
+
+    res.status(200).json({ message: 'Giocatore aggiornato con successo.', player: updatedPlayer });
+  } catch (err) {
+    console.error('Errore durante l\'aggiornamento del giocatore:', err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+
+
 
 module.exports = router;

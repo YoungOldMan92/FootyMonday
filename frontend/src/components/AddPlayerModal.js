@@ -110,7 +110,7 @@ function AddPlayerModal({ show, onClose, setPlayers }) {
       };
     } else {
       newPlayer = {
-        name: `${playerData.nome} - Guest`,
+        name: `${playerData.nome}`,
         ruolo: role || 'Non assegnato',
         capacitaTecnica: { controlloPalla: 5, dribbling: 5, precisionePassaggi: 5, tiro: 5 },
         resistenzaFisica: { stamina: 5, velocita: 5, resistenzaSforzo: 5 },
